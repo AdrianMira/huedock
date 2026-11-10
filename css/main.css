@@ -1,0 +1,147 @@
+:root {
+    --space-sm: .5rem;
+    --space-md: 1rem;
+    --space-lg: 1.5rem;
+
+    --button-min-size: 2.75rem;
+}
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+}
+
+button {
+    min-width: var(--button-min-size);
+    min-height: var(--button-min-size);
+}
+
+.content-grid {
+    display: grid;
+    min-height: 100dvh;
+    grid-template-rows: auto 1fr;
+}
+
+.hidden {
+    display: none;
+}
+
+.wrapper {
+    /* border: 1px solid red; */
+    width: 95%;
+    margin-inline: auto;
+}
+
+.flex {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 1em;
+}
+
+.web-header {
+    background-color: aqua;
+    padding-block: var(--space-sm);
+
+    .wrapper {
+        display: grid;
+        grid-template-columns: auto 1fr auto;
+        align-items: center;
+        justify-items: center;
+
+        .web-header__logo {
+            justify-self: start;
+        }
+
+        .web-header__generate {
+            justify-self: center;
+        }
+
+        .web-header__nav {
+            justify-self: end;
+        }
+    }
+}
+
+.web-header__generate {
+    margin: auto;
+}
+
+main {
+    outline: 2px red solid;
+    background-color: cadetblue;
+    display: grid;
+    grid-template-rows: 1fr auto;
+}
+
+.palette {
+    background-color: blueviolet;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-sm);
+
+    padding-block: var(--space-sm);
+
+    .palette-options__add-color {
+        align-self: center;
+    }
+}
+
+.color-card {
+    background-color: rgb(223, 223, 0);
+    /* max-height: 3rem; */
+    flex: 1;
+
+    align-content: center;
+
+    .color-card__code {
+        margin: 0;
+        margin: auto;
+    }
+}
+
+.palette-options__add-color {
+    align-self: center;
+}
+
+.palette-options {
+    background-color: red;
+    padding-block: var(--space-sm);
+    text-align: center;
+
+    .flex {
+        flex-direction: column;
+    }
+}
+
+@media (width >=1020px) {
+
+    .palette {
+        flex-direction: row;
+    }
+
+    .palette-options {
+        .flex {
+            flex-direction: row;
+            justify-content: space-between;
+        }
+    }
+
+    .color-card {
+        padding-block-end: var(--space-sm);
+
+        .color-card__code {
+            margin: 0;
+            margin-block: auto;
+        }
+
+        .flex {
+            flex-direction: column;
+            min-height: 100%;
+        }
+    }
+
+}

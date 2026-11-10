@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="css/main.css">
+    <title>HueDock</title>
+</head>
+
+<body>
+    <div class="content-grid">
+        <header class="web-header">
+            <div class="wrapper">
+                <div class="web-header__logo">🎨</div>
+                <h1 class="web-header__title hidden">HUEDOCK</h1>
+                <button class="btn web-header__generate" type="button">GENERATE</button>
+                <button class="btn web-header__nav" type="button">NAV</button>
+
+            </div>
+        </header>
+
+        <main>
+            <section class="palette wrapper">
+                <div class="color-card">
+                    <div class="wrapper flex">
+                        <p class="color-card__code">#000000</p>
+                        <button class="btn color-card__lock" type="button" aria-label="block">BLOCK</button>
+                        <button class="btn color-card__edit" type="button" aria-label="edit">EDIT</button>
+                        <button class="btn color-card__delete" type="button" aria-label="delete">DELETE</button>
+                    </div>
+                </div>
+                <div class="color-card">
+                    <div class="wrapper flex">
+                        <p class="color-card__code">#000000</p>
+                        <button class="btn color-card__lock" type="button" aria-label="block">BLOCK</button>
+                        <button class="btn color-card__edit" type="button" aria-label="edit">EDIT</button>
+                        <button class="btn color-card__delete" type="button" aria-label="delete">DELETE</button>
+                    </div>
+                </div>
+                <div class="color-card">
+                    <div class="wrapper flex">
+                        <p class="color-card__code">#000000</p>
+                        <button class="btn color-card__lock" type="button" aria-label="block">BLOCK</button>
+                        <button class="btn color-card__edit" type="button" aria-label="edit">EDIT</button>
+                        <button class="btn color-card__delete" type="button" aria-label="delete">DELETE</button>
+                    </div>
+                </div>
+            </section>
+
+            <section class="palette-options">
+                <div class="wrapper flex">
+                    <button class="btn palette-options__add-color" type="button" aria-label="add color">+</button>
+    
+                    <button class="btn palette-options__save" type="button">SAVE PALETTE</button>
+                    <button class="btn palette-options__export hidden" type="button">EXPORT</button>
+                </div>
+            </section>
+
+        </main>
+    </div>
+
+    <dialog class="generator-dialog">
+        <div class="generator-dialog__content">
+            <h2 class="generator-dialog__title">Generate Options</h2>
+
+            <form id="generator-form">
+                <label for="palette-name">Palette name</label>
+                <input type="text" id="palette-name" name="paletteName" placeholder="Palette 1">
+
+                <label for="generation-mode">Generation mode</label>
+                <select id="generation-mode" name="generationMode">
+                    <option value="random">Random</option>
+                    <option value="harmonious">Harmonious</option>
+                </select>
+
+                <button type="submit">Generate</button>
+            </form>
+        </div>
+    </dialog>
+
+    <aside class="sidebar hidden">
+        <nav class="sidebar__nav">
+            <a href="#" class="sidebar__link">SAVED PALETTES</a>
+            <a href="#" class="sidebar__link">OPTION 2</a>
+            <a href="#" class="sidebar__link">OPTION 3</a>
+        </nav>
+    </aside>
+
+
+
+    <script type="module" src=""></script>
+</body>
+
+</html>
