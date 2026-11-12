@@ -45,13 +45,14 @@
                         <button class="btn color-card__edit" type="button" aria-label="edit">EDIT</button>
                         <button class="btn color-card__delete" type="button" aria-label="delete">DELETE</button>
                     </div>
-                </div>
+                </div>                
+
             </section>
 
             <section class="palette-options">
                 <div class="wrapper flex">
                     <button class="btn palette-options__add-color" type="button" aria-label="add color">+</button>
-    
+
                     <button class="btn palette-options__save" type="button">SAVE PALETTE</button>
                     <button class="btn palette-options__export hidden" type="button">EXPORT</button>
                 </div>
@@ -66,11 +67,11 @@
 
             <form id="generator-form">
                 <label for="palette-name">Palette name</label>
-                <input type="text" id="palette-name" name="paletteName" placeholder="Palette 1">
+                <input type="text" id="palette-name" name="paletteName" placeholder="Palette 1" autofocus>
 
                 <label for="generation-mode">Generation mode</label>
                 <select id="generation-mode" name="generationMode">
-                    <option value="random">Random</option>
+                    <option value="random" selected>Random</option>
                     <option value="harmonious">Harmonious</option>
                 </select>
 
@@ -89,7 +90,7 @@
 
 
 
-    <script type="module" src=""></script>
+    <script type="module" src="js/script.js"></script>
 </body>
 
 </html>
