@@ -91,7 +91,7 @@ main {
 }
 
 .color-card {
-    background-color: rgb(223, 223, 0);
+    background-color: #FFFFFF;
     /* max-height: 3rem; */
     flex: 1;
 
@@ -114,6 +114,22 @@ main {
 
     .flex {
         flex-direction: column;
+    }
+}
+
+.edit-color-dialog[open] {
+    #edit-color-content {
+        display: flex;
+        flex-direction: column;
+        gap: var(--space-sm);
+
+        .actual-color {
+            width: 100%;
+            aspect-ratio: 4 / 1;
+            min-height: var(--space-lg);
+
+            border: 1px solid black;
+        }
     }
 }
 

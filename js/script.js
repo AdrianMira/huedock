@@ -1,8 +1,5 @@
 
 // Global variables
-const MIN_COLOR_CARDS = 3;
-const MAX_COLOR_CARDS = 5;
-
 const paletteObj = {
     paletteName: "Palette",
     colors: [
@@ -12,14 +9,30 @@ const paletteObj = {
     ]
 };
 
+// random color
+const MIN_COLOR_CARDS = 3;
+const MAX_COLOR_CARDS = 5;
+
+/////////////////////////////////////////
+
+// Extra varibales
+
+// edit color
+let editingColorCard = null;
+
 /////////////////////////////////////////
 
 // DOM Elements
 
-// Generate button & modal
+// Generate button & modals
 const generateBtn = document.querySelector(".web-header__generate");
 const generateModal = document.querySelector(".generator-dialog");
 const formModal = generateModal.querySelector("#generator-form");
+
+const editColorModal = document.querySelector(".edit-color-dialog");
+const colorCodeInput = editColorModal.querySelector("#actual-color__code");
+const actualColorInput = editColorModal.querySelector(".actual-color");
+const editColorCloseBtn = editColorModal.querySelector(".edit-color-dialog__buttons button")
 
 // Generate colors
 const palette = document.querySelector(".palette");
@@ -37,17 +50,42 @@ renderColorCards();
 
 // DOM Events
 
+// modals
 generateBtn.addEventListener("click", () => {
     generateModal.showModal();
 });
 
 formModal.addEventListener("submit", (e) => {
     e.preventDefault();
-
     generatePalette();
     generateModal.close();
 });
 
+colorCodeInput.addEventListener("input", () => {
+    actualColorInput.style.backgroundColor = colorCodeInput.value;
+});
+
+editColorModal.addEventListener("submit", (e) => {
+    e.preventDefault();
+
+    if (!editingColorCard) return;
+
+    const colorCards = [...palette.querySelectorAll(".color-card")];
+    const index = colorCards.indexOf(editingColorCard);
+
+    if (index === -1) return;
+
+    paletteObj.colors[index] = colorCodeInput.value;
+
+    renderColorCards();
+    editColorModal.close();
+});
+
+editColorCloseBtn.addEventListener("click", () => {
+    editColorModal.close();
+})
+
+// palette
 palette.addEventListener("click", (e) => {
 
     // Delete color
@@ -70,6 +108,25 @@ palette.addEventListener("click", (e) => {
         const colorCard = lockBtn.closest(".color-card");
         colorCard.classList.toggle("locked");
     }
+
+    // Edit color
+    const editBtn = e.target.closest(".color-card__edit");
+
+    if (editBtn) {
+        editingColorCard = editBtn.closest(".color-card");
+
+        const currentColor = paletteObj.colors[
+            [...palette.children].indexOf(editingColorCard)
+        ]; //no entiendo lo de indexOf
+
+        console.log(currentColor)
+        colorCodeInput.value = currentColor;
+
+        const actualColor = editColorModal.querySelector(".actual-color");
+        actualColor.style.backgroundColor = currentColor;
+
+        editColorModal.showModal();
+    }
 });
 
 addColor.addEventListener("click", () => {
@@ -84,7 +141,6 @@ addColor.addEventListener("click", () => {
 /////////////////////////////////////////
 
 // Create color card
-
 function createColorCard(palette) {
     const colorCard = document.createElement("div");
     const colorCardWrapper = document.createElement("div");
@@ -126,7 +182,6 @@ function createColorCard(palette) {
 /////////////////////////////////////////
 
 // Palette Generation Algorithm
-
 function generatePalette() {
     const paletteColorCards = palette.querySelectorAll(".color-card");
 

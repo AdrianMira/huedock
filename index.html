@@ -45,7 +45,7 @@
                         <button class="btn color-card__edit" type="button" aria-label="edit">EDIT</button>
                         <button class="btn color-card__delete" type="button" aria-label="delete">DELETE</button>
                     </div>
-                </div>                
+                </div>
 
             </section>
 
@@ -79,6 +79,23 @@
             </form>
         </div>
     </dialog>
+
+    <dialog class="edit-color-dialog">
+        <form id="edit-color-content">
+            <h2>Edit Color</h2>
+            <div class="actual-color"></div>
+
+            <div class="edit-color-dialog__code-input flex">
+                <label for="actual-color__code">Color Code:</label>
+                <input type="text" name="colorCode" id="actual-color__code" value="#FFFFFF">
+            </div>
+            <div class="edit-color-dialog__buttons">
+                <button type="button">Close</button>
+                <button type="submit">Save Changes</button>
+            </div>
+        </form>
+    </dialog>
+
 
     <aside class="sidebar hidden">
         <nav class="sidebar__nav">
