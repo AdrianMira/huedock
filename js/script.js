@@ -9,13 +9,28 @@ const paletteObj = {
     ]
 };
 
+// Settings
+const settingsObj = {
+    generationModes: {
+        random: generateRandomPalette,
+        harmonious: generateHarmoniousPalette
+    },
+    modeDescriptions: {
+        random: "Creates palette with random colors",
+        harmonious: "Fill palette with white colors"
+    },
+    actualMode: "random",
+    referenceColor: null,
+    useReferenceColor: false,
+    referenceColorDescriptions: [
+        [true, "The palette will be generated using this color as a reference."],
+        [false, "A reference color will be chosen automatically."]
+    ]
+}
+
 // random color
 const MIN_COLOR_CARDS = 3;
 const MAX_COLOR_CARDS = 5;
-
-/////////////////////////////////////////
-
-// Extra varibales
 
 // edit color
 let editingColorCard = null;
@@ -26,20 +41,29 @@ let editingColorCard = null;
 
 // Generate button & modals
 const generateBtn = document.querySelector(".web-header__generate");
-const generateModal = document.querySelector(".generator-dialog");
-const formModal = generateModal.querySelector("#generator-form");
+
+const settingsBtn = document.querySelector(".web-header__settings");
+const settingsModal = document.querySelector(".settings-dialog");
+const settingsForm = settingsModal.querySelector("#settings-dialog__form");
+const settingsModeDescription = settingsModal.querySelector(".generation-mode__description");
+const settingsColorCheckBox = settingsModal.querySelector("#reference-color-checkbox");
+const settingsColorInput = settingsModal.querySelector("#reference-color");
+const settingsColorCodeInput = settingsModal.querySelector("#reference-color-code");
+const settingsColorDescription = settingsModal.querySelector(".reference-color-description");
+const settingsCloseBtn = settingsModal.querySelector("button[type=button]");
 
 const editColorModal = document.querySelector(".edit-color-dialog");
-const colorCodeInput = editColorModal.querySelector("#actual-color__code");
-const actualColorInput = editColorModal.querySelector(".actual-color");
+const editColorCodeInput = editColorModal.querySelector("#actual-color__code");
+const editActualColorInput = editColorModal.querySelector(".actual-color");
 const editColorCloseBtn = editColorModal.querySelector(".edit-color-dialog__buttons button")
 
 // Generate colors
-const palette = document.querySelector(".palette");
-const generatorOption = generateModal.querySelector("#generation-mode");
+const settingsGenerationMode = settingsModal.querySelector("#generation-mode");
 
 // Palette & color options
-const addColor = document.querySelector(".palette-options__add-color");
+const palette = document.querySelector(".palette");
+const colorCardList = document.querySelector(".palette__color-list");
+const addColorBtn = document.querySelector(".palette__add-color");
 
 /////////////////////////////////////////
 
@@ -50,19 +74,88 @@ renderColorCards();
 
 // DOM Events
 
-// modals
+// palette generation
 generateBtn.addEventListener("click", () => {
-    generateModal.showModal();
-});
-
-formModal.addEventListener("submit", (e) => {
-    e.preventDefault();
     generatePalette();
-    generateModal.close();
+})
+
+/////////////////////////////////////////
+// Settings modal
+function updateReferenceControls() {
+    const isRandom = settingsGenerationMode.value === "random";
+    const useReferenceColor = settingsColorCheckBox.checked;
+
+    settingsColorCheckBox.disabled = isRandom;
+
+    settingsColorInput.disabled = isRandom || !useReferenceColor;
+    settingsColorCodeInput.disabled = isRandom || !useReferenceColor;
+
+    if (useReferenceColor && !isRandom) {
+        settingsColorDescription.textContent =
+            settingsObj.referenceColorDescriptions[0][1];
+    } else {
+        settingsColorDescription.textContent =
+            settingsObj.referenceColorDescriptions[1][1];
+    }
+}
+
+settingsBtn.addEventListener("click", () => {
+    settingsGenerationMode.value = settingsObj.actualMode;
+
+    settingsColorCheckBox.checked = settingsObj.actualMode !== "random" && settingsObj.useReferenceColor;
+
+    const color = settingsObj.referenceColor || "#FFFFFF";
+    settingsColorInput.value = color;
+    settingsColorCodeInput.value = color;
+
+    settingsModeDescription.textContent = settingsObj.modeDescriptions[settingsObj.actualMode];
+
+    updateReferenceControls();
+    settingsModal.showModal();
 });
 
-colorCodeInput.addEventListener("input", () => {
-    actualColorInput.style.backgroundColor = colorCodeInput.value;
+settingsGenerationMode.addEventListener("change", () => {
+    settingsModeDescription.textContent =
+        settingsObj.modeDescriptions[settingsGenerationMode.value];
+
+    if (settingsGenerationMode.value === "random") {
+        settingsColorCheckBox.checked = false;
+    }
+
+    updateReferenceControls();
+});
+
+settingsColorCheckBox.addEventListener("change", () => {
+    updateReferenceControls();
+});
+
+settingsColorInput.addEventListener("input", () => {
+    settingsColorCodeInput.value = settingsColorInput.value;
+});
+
+settingsColorCodeInput.addEventListener("input", () => {
+    const color = settingsColorCodeInput.value.trim();
+    settingsColorInput.value = color;
+});
+
+settingsForm.addEventListener("submit", (e) => {
+    e.preventDefault();
+
+    settingsObj.actualMode = settingsGenerationMode.value;
+    settingsObj.useReferenceColor = settingsColorCheckBox.checked;
+    settingsObj.referenceColor = settingsColorInput.value;
+
+    settingsModal.close();
+});
+
+settingsCloseBtn.addEventListener("click", () => {
+    settingsModal.close();
+});
+
+
+// edit color modal
+editColorCodeInput.addEventListener("input", () => {
+    editActualColorInput.style.backgroundColor = editColorCodeInput.value;
 });
 
 editColorModal.addEventListener("submit", (e) => {
@@ -70,12 +163,12 @@ editColorModal.addEventListener("submit", (e) => {
 
     if (!editingColorCard) return;
 
-    const colorCards = [...palette.querySelectorAll(".color-card")];
+    const colorCards = [...colorCardList.querySelectorAll(".color-card")];
     const index = colorCards.indexOf(editingColorCard);
 
     if (index === -1) return;
 
-    paletteObj.colors[index] = colorCodeInput.value;
+    paletteObj.colors[index] = editColorCodeInput.value;
 
     renderColorCards();
     editColorModal.close();
@@ -96,8 +189,13 @@ palette.addEventListener("click", (e) => {
         const paletteColorCards = palette.querySelectorAll(".color-card");
 
         if (paletteColorCards.length > MIN_COLOR_CARDS) {
-            colorCard.remove();
-            updatePalette();
+            if (!colorCard.classList.contains("locked")) {
+                colorCard.remove();
+                updatePalette();
+
+                if (addColorBtn.classList.contains("hidden"))
+                    addColorBtn.classList.remove("hidden");
+            }
         }
     }
 
@@ -116,11 +214,11 @@ palette.addEventListener("click", (e) => {
         editingColorCard = editBtn.closest(".color-card");
 
         const currentColor = paletteObj.colors[
-            [...palette.children].indexOf(editingColorCard)
-        ]; //no entiendo lo de indexOf
+            [...colorCardList.children].indexOf(editingColorCard)
+        ];
 
         console.log(currentColor)
-        colorCodeInput.value = currentColor;
+        editColorCodeInput.value = currentColor;
 
         const actualColor = editColorModal.querySelector(".actual-color");
         actualColor.style.backgroundColor = currentColor;
@@ -129,12 +227,16 @@ palette.addEventListener("click", (e) => {
     }
 });
 
-addColor.addEventListener("click", () => {
+addColorBtn.addEventListener("click", () => {
     const paletteColorCards = palette.querySelectorAll(".color-card");
 
     if (paletteColorCards.length < MAX_COLOR_CARDS) {
         createColorCard(palette);
         updatePalette();
+    }
+
+    if (paletteColorCards.length === MAX_COLOR_CARDS - 1) {
+        addColorBtn.classList.add("hidden");
     }
 });
 
@@ -176,13 +278,20 @@ function createColorCard(palette) {
     );
 
     colorCard.append(colorCardWrapper);
-    palette.append(colorCard);
+    colorCardList.append(colorCard);
 }
 
 /////////////////////////////////////////
 
-// Palette Generation Algorithm
+// Palette Generation Algorithms
 function generatePalette() {
+    const generationMode = settingsObj.generationModes[settingsObj.actualMode]
+    generationMode();
+
+    renderColorCards();
+}
+
+function generateRandomPalette() {
     const paletteColorCards = palette.querySelectorAll(".color-card");
 
     for (let i = 0; i < paletteColorCards.length; i++) {
@@ -192,13 +301,22 @@ function generatePalette() {
         if (colorCard.classList.contains("locked")) {
             continue;
         }
-
-        if (generatorOption.value === "random") {
-            paletteObj.colors[i] = generateRandomColor();
-        }
+        paletteObj.colors[i] = generateRandomColor();
     }
+}
 
-    renderColorCards();
+function generateHarmoniousPalette() {
+    const paletteColorCards = palette.querySelectorAll(".color-card");
+
+    for (let i = 0; i < paletteColorCards.length; i++) {
+        const colorCard = paletteColorCards[i];
+
+        // Do not change locked colors
+        if (colorCard.classList.contains("locked")) {
+            continue;
+        }
+        paletteObj.colors[i] = "#FFFFFF";
+    }
 }
 
 function generateRandomColor() {

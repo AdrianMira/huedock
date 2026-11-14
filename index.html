@@ -14,45 +14,48 @@
             <div class="wrapper">
                 <div class="web-header__logo">🎨</div>
                 <h1 class="web-header__title hidden">HUEDOCK</h1>
-                <button class="btn web-header__generate" type="button">GENERATE</button>
+                <div class="generation-buttons">
+                    <button class="btn web-header__generate" type="button">GENERATE</button>
+                    <button class="btn web-header__settings" type="button" aria-label="settings">Settings</button>
+                </div>
                 <button class="btn web-header__nav" type="button">NAV</button>
 
             </div>
         </header>
 
         <main>
-            <section class="palette wrapper">
-                <div class="color-card">
-                    <div class="wrapper flex">
-                        <p class="color-card__code">#000000</p>
-                        <button class="btn color-card__lock" type="button" aria-label="block">BLOCK</button>
-                        <button class="btn color-card__edit" type="button" aria-label="edit">EDIT</button>
-                        <button class="btn color-card__delete" type="button" aria-label="delete">DELETE</button>
+            <section class="palette wrapper flex">
+                <div class="palette__color-list wrapper flex">
+                    <div class="color-card">
+                        <div class="wrapper flex">
+                            <p class="color-card__code">#000000</p>
+                            <button class="btn color-card__lock" type="button" aria-label="block">BLOCK</button>
+                            <button class="btn color-card__edit" type="button" aria-label="edit">EDIT</button>
+                            <button class="btn color-card__delete" type="button" aria-label="delete">DELETE</button>
+                        </div>
+                    </div>
+                    <div class="color-card">
+                        <div class="wrapper flex">
+                            <p class="color-card__code">#000000</p>
+                            <button class="btn color-card__lock" type="button" aria-label="block">BLOCK</button>
+                            <button class="btn color-card__edit" type="button" aria-label="edit">EDIT</button>
+                            <button class="btn color-card__delete" type="button" aria-label="delete">DELETE</button>
+                        </div>
+                    </div>
+                    <div class="color-card">
+                        <div class="wrapper flex">
+                            <p class="color-card__code">#000000</p>
+                            <button class="btn color-card__lock" type="button" aria-label="block">BLOCK</button>
+                            <button class="btn color-card__edit" type="button" aria-label="edit">EDIT</button>
+                            <button class="btn color-card__delete" type="button" aria-label="delete">DELETE</button>
+                        </div>
                     </div>
                 </div>
-                <div class="color-card">
-                    <div class="wrapper flex">
-                        <p class="color-card__code">#000000</p>
-                        <button class="btn color-card__lock" type="button" aria-label="block">BLOCK</button>
-                        <button class="btn color-card__edit" type="button" aria-label="edit">EDIT</button>
-                        <button class="btn color-card__delete" type="button" aria-label="delete">DELETE</button>
-                    </div>
-                </div>
-                <div class="color-card">
-                    <div class="wrapper flex">
-                        <p class="color-card__code">#000000</p>
-                        <button class="btn color-card__lock" type="button" aria-label="block">BLOCK</button>
-                        <button class="btn color-card__edit" type="button" aria-label="edit">EDIT</button>
-                        <button class="btn color-card__delete" type="button" aria-label="delete">DELETE</button>
-                    </div>
-                </div>
-
+                <button class="btn palette__add-color" type="button" aria-label="add color">+</button>
             </section>
 
             <section class="palette-options">
                 <div class="wrapper flex">
-                    <button class="btn palette-options__add-color" type="button" aria-label="add color">+</button>
-
                     <button class="btn palette-options__save" type="button">SAVE PALETTE</button>
                     <button class="btn palette-options__export hidden" type="button">EXPORT</button>
                 </div>
@@ -61,41 +64,84 @@
         </main>
     </div>
 
-    <dialog class="generator-dialog">
-        <div class="generator-dialog__content">
-            <h2 class="generator-dialog__title">Generate Options</h2>
+    <dialog class="settings-dialog">
+        <div class="settings-dialog__content flex">
+            <h2>Generate Options</h2>
+            <p>Customize how your palettes are generated.</p>
+            <hr>
 
-            <form id="generator-form">
-                <label for="palette-name">Palette name</label>
-                <input type="text" id="palette-name" name="paletteName" placeholder="Palette 1" autofocus>
+            <form id="settings-dialog__form">
+                <div class="settings-dialog__generation-mode flex">
+                    <label for="generation-mode">Generation mode:</label>
+                    <select id="generation-mode" name="generationMode">
+                        <option value="random" selected>Random</option>
+                        <option value="harmonious">Harmonious</option>
+                    </select>
+                    <p class="generation-mode__description">Choose random colors.</p>
+                </div>
 
-                <label for="generation-mode">Generation mode</label>
-                <select id="generation-mode" name="generationMode">
-                    <option value="random" selected>Random</option>
-                    <option value="harmonious">Harmonious</option>
-                </select>
+                <div class="settings-dialog__reference-color flex">
 
-                <button type="submit">Generate</button>
+                    <div class="settings-dialog__reference-color-check" flex>
+                        <input type="checkbox" id="reference-color-checkbox" name="referenceColorCheckbox">
+                        <label for="reference-color-checkbox">Use reference color</label>
+                    </div>
+
+                    <label for="reference-color">Reference color</label>
+                    <div class="settings-dialog__reference-color-inputs flex">
+                        <input type="color" id="reference-color" name="referenceColor">
+                        <input type="text" id="reference-color-code" name="referenceColorCode">
+                    </div>
+                    <p class="reference-color-description">The palette will be generated using this color as a reference.</p>
+                </div>
+
+                <hr>
+                <div class="settings-dialog__buttons flex">
+                    <button type="button">Cancel</button>
+                    <button type="submit">Apply settings</button>
+                </div>
             </form>
         </div>
     </dialog>
 
     <dialog class="edit-color-dialog">
-        <form id="edit-color-content">
-            <h2>Edit Color</h2>
-            <div class="actual-color"></div>
+        <h2>Edit Color</h2>
+        <div class="edit-color-content">
+            <form id="edit-color-form">
+                <div class="actual-color"></div>
 
-            <div class="edit-color-dialog__code-input flex">
-                <label for="actual-color__code">Color Code:</label>
-                <input type="text" name="colorCode" id="actual-color__code" value="#FFFFFF">
-            </div>
-            <div class="edit-color-dialog__buttons">
-                <button type="button">Close</button>
-                <button type="submit">Save Changes</button>
-            </div>
-        </form>
+                <div class="edit-color-dialog__code-input">
+                    <label for="actual-color__code">Color Code:</label>
+                    <input type="text" name="colorCode" id="actual-color__code" value="#FFFFFF">
+                </div>
+                <div class="edit-color-dialog__buttons">
+                    <button type="button">Close</button>
+                    <button type="submit">Save Changes</button>
+                </div>
+            </form>
+        </div>
     </dialog>
 
+    <dialog class="save-palette-dialog" open>
+        <div class="save-palette-content">
+            <form id="save-palette-form">
+                <h2>Save palette</h2>
+                <p>Give your palette a name to find it later</p>
+
+                <div class="save-palette__name">
+                    <label for="palette-name">Palette name:</label>
+                    <input type="text" name="paletteName" id="palette-name" placeholder="My new palette">
+                </div>
+
+                <p>Preview</p>
+                <div class="palette-preview flex">
+                    <div class="palette-preview__color">Color</div>
+                    <div class="palette-preview__color">Color</div>
+                    <div class="palette-preview__color">Color</div>
+                </div>
+            </form>
+        </div>
+    </dialog>
 
     <aside class="sidebar hidden">
         <nav class="sidebar__nav">

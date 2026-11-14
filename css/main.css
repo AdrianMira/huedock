@@ -2,8 +2,9 @@
     --space-sm: .5rem;
     --space-md: 1rem;
     --space-lg: 1.5rem;
-
     --button-min-size: 2.75rem;
+
+    --border-color: rgb(128, 128, 128);
 }
 
 * {
@@ -15,8 +16,17 @@ body {
 }
 
 button {
+    text-align: center;
+
     min-width: var(--button-min-size);
     min-height: var(--button-min-size);
+
+    background-color: #FFFFFF;
+    border: 1px solid var(--border-color);
+    border-radius: var(--space-sm);
+
+    padding: 0;
+    padding-inline: var(--space-sm);
 }
 
 .content-grid {
@@ -79,14 +89,19 @@ main {
 
 .palette {
     background-color: blueviolet;
-    display: flex;
     flex-direction: column;
-    gap: var(--space-sm);
+    gap: 0px;
 
-    padding-block: var(--space-sm);
+    .palette__color-list {
+        height: 100%;
 
-    .palette-options__add-color {
-        align-self: center;
+        flex-direction: column;
+        align-items: stretch;
+        gap: var(--space-sm);
+
+        padding-block: var(--space-sm);
+
+        flex: 1;
     }
 }
 
@@ -103,8 +118,12 @@ main {
     }
 }
 
-.palette-options__add-color {
+.palette__add-color {
+    width: 100%;
+    min-width: var(--button-min-size);
+
     align-self: center;
+    flex: calc(1/10);
 }
 
 .palette-options {
@@ -117,8 +136,94 @@ main {
     }
 }
 
+.settings-dialog[open] {
+
+    h2,
+    p {
+        margin: 0;
+    }
+
+    hr {
+        margin-block: var(--space-md);
+        width: 100%;
+    }
+
+    .settings-dialog__content {
+        flex-direction: column;
+        align-items: start;
+        gap: var(--space-md);
+        width: 100%;
+    }
+
+    #settings-dialog__form {
+        display: flex;
+        flex-direction: column;
+        gap: var(--space-md);
+    }
+
+    .settings-dialog__generation-mode {
+        flex-direction: column;
+        gap: var(--space-sm);
+        align-items: start;
+
+        select {
+            width: 100%;
+            min-height: var(--button-min-size);
+            border-radius: var(--space-sm);
+        }
+    }
+
+    .settings-dialog__reference-color {
+        flex-direction: column;
+        align-items: start;
+        gap: var(--space-sm);
+
+        .settings-dialog__reference-color-inputs {
+            width: 100%;
+            justify-content: start;
+            flex-wrap: wrap;
+
+            input[type="color"]#reference-color {
+                width: var(--button-min-size);
+                min-height: var(--button-min-size);
+                background: none;
+                border: 0;
+                padding: 0;
+            }
+
+            #reference-color::-webkit-color-swatch-wrapper {
+                padding: 0;
+            }
+
+            #reference-color::-webkit-color-swatch {
+                border: var(--border-color) 1px solid;
+                ;
+                border-radius: var(--space-sm);
+            }
+
+            #reference-color::-moz-color-swatch {
+                border: var(--border-color) 1px solid;
+                border-radius: var(--space-sm);
+            }
+
+            #reference-color-code {
+                flex: 1;
+                height: var(--button-min-size);
+                border-radius: var(--space-sm);
+                border: 1px solid var(--border-color);
+            }
+        }
+    }
+
+    .settings-dialog__buttons {
+        justify-content: end;
+        gap: var(--space-sm);
+    }
+}
+
+
 .edit-color-dialog[open] {
-    #edit-color-content {
+    #edit-color-form {
         display: flex;
         flex-direction: column;
         gap: var(--space-sm);
@@ -137,6 +242,11 @@ main {
 
     .palette {
         flex-direction: row;
+        gap: var(--space-sm);
+
+        .palette__color-list {
+            flex-direction: row;
+        }
     }
 
     .palette-options {
@@ -160,4 +270,10 @@ main {
         }
     }
 
+    .palette__add-color {
+        height: 100%;
+        min-height: var(--button-min-size);
+
+        flex: calc(1/20);
+    }
 }
