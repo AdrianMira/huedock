@@ -9,6 +9,8 @@ const paletteObj = {
     ]
 };
 
+const SAVED_PALETTES = [];
+
 // Settings
 const settingsObj = {
     generationModes: {
@@ -57,6 +59,11 @@ const editColorCodeInput = editColorModal.querySelector("#actual-color__code");
 const editActualColorInput = editColorModal.querySelector(".actual-color");
 const editColorCloseBtn = editColorModal.querySelector(".edit-color-dialog__buttons button")
 
+const savePaletteBtn = document.querySelector(".palette-options__save");
+const savePaletteModal = document.querySelector(".save-palette-dialog");
+const savePaletteCloseBtn = savePaletteModal.querySelector("button[type=button]");
+const savePaletteNameInput = savePaletteModal.querySelector("#palette-name");
+
 // Generate colors
 const settingsGenerationMode = settingsModal.querySelector("#generation-mode");
 
@@ -64,6 +71,8 @@ const settingsGenerationMode = settingsModal.querySelector("#generation-mode");
 const palette = document.querySelector(".palette");
 const colorCardList = document.querySelector(".palette__color-list");
 const addColorBtn = document.querySelector(".palette__add-color");
+
+const palettePreview = document.querySelector(".palette-preview");
 
 /////////////////////////////////////////
 
@@ -81,24 +90,8 @@ generateBtn.addEventListener("click", () => {
 
 /////////////////////////////////////////
 // Settings modal
-function updateReferenceControls() {
-    const isRandom = settingsGenerationMode.value === "random";
-    const useReferenceColor = settingsColorCheckBox.checked;
 
-    settingsColorCheckBox.disabled = isRandom;
-
-    settingsColorInput.disabled = isRandom || !useReferenceColor;
-    settingsColorCodeInput.disabled = isRandom || !useReferenceColor;
-
-    if (useReferenceColor && !isRandom) {
-        settingsColorDescription.textContent =
-            settingsObj.referenceColorDescriptions[0][1];
-    } else {
-        settingsColorDescription.textContent =
-            settingsObj.referenceColorDescriptions[1][1];
-    }
-}
-
+// settings modal
 settingsBtn.addEventListener("click", () => {
     settingsGenerationMode.value = settingsObj.actualMode;
 
@@ -178,6 +171,38 @@ editColorCloseBtn.addEventListener("click", () => {
     editColorModal.close();
 })
 
+// save palette modal
+savePaletteBtn.addEventListener("click", () => {
+    savePaletteModal.showModal();
+
+    // show colors in palette preview
+    const paletteColors = paletteObj.colors;
+    const palettePreviewColors = (savePaletteModal.querySelectorAll(".palette-preview__color"));
+
+    palettePreviewColors.forEach((color, id) => {
+        color.style.backgroundColor = paletteColors[id];
+    })
+})
+
+savePaletteCloseBtn.addEventListener("click", () => {
+    savePaletteModal.close();
+})
+
+savePaletteModal.addEventListener("submit", (e) => {
+    e.preventDefault();
+    // save palette preview data => paletteObj to Database
+    paletteObj.paletteName = savePaletteNameInput.value;
+    
+    const newPalette = {
+        paletteName: paletteObj.paletteName,
+        colors:[...paletteObj.colors]
+    };
+
+    SAVED_PALETTES.push(newPalette);
+    savePaletteModal.close();
+})
+
+
 // palette
 palette.addEventListener("click", (e) => {
 
@@ -192,6 +217,11 @@ palette.addEventListener("click", (e) => {
             if (!colorCard.classList.contains("locked")) {
                 colorCard.remove();
                 updatePalette();
+
+                //update palette preview too
+                let palettePreviewColors = (savePaletteModal.querySelectorAll(".palette-preview__color"));
+
+                palettePreviewColors[0].remove(); //Remove 1 color. Preview updates when use save palette BTN
 
                 if (addColorBtn.classList.contains("hidden"))
                     addColorBtn.classList.remove("hidden");
@@ -279,6 +309,13 @@ function createColorCard(palette) {
 
     colorCard.append(colorCardWrapper);
     colorCardList.append(colorCard);
+
+    // create color for preview palette:
+    const previewColor = document.createElement("div");
+    previewColor.classList.add("palette-preview__color");
+    previewColor.style.backgroundColor = "#FFFFFF"
+
+    palettePreview.append(previewColor);
 }
 
 /////////////////////////////////////////
@@ -351,8 +388,6 @@ function renderColorCards() {
     }
 }
 
-/////////////////////////////////////////
-
 // Update Palette
 
 function updatePalette() {
@@ -366,5 +401,26 @@ function updatePalette() {
         paletteObj.colors.push(color);
     }
 
-    console.log("Palette updated:", paletteObj);
+    // console.log("Palette updated:", paletteObj);
+}
+
+/////////////////////////////////////////
+
+// Setting modals
+function updateReferenceControls() {
+    const isRandom = settingsGenerationMode.value === "random";
+    const useReferenceColor = settingsColorCheckBox.checked;
+
+    settingsColorCheckBox.disabled = isRandom;
+
+    settingsColorInput.disabled = isRandom || !useReferenceColor;
+    settingsColorCodeInput.disabled = isRandom || !useReferenceColor;
+
+    if (useReferenceColor && !isRandom) {
+        settingsColorDescription.textContent =
+            settingsObj.referenceColorDescriptions[0][1];
+    } else {
+        settingsColorDescription.textContent =
+            settingsObj.referenceColorDescriptions[1][1];
+    }
 }

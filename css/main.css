@@ -9,10 +9,11 @@
 
 * {
     box-sizing: border-box;
+    margin-block: 0;
 }
 
 body {
-    margin: 0;
+    /* margin: 0; */
 }
 
 button {
@@ -29,12 +30,6 @@ button {
     padding-inline: var(--space-sm);
 }
 
-.content-grid {
-    display: grid;
-    min-height: 100dvh;
-    grid-template-rows: auto 1fr;
-}
-
 .hidden {
     display: none;
 }
@@ -47,94 +42,105 @@ button {
 
 .flex {
     display: flex;
+    gap: var(--space-md);
+    /* align-items: center;
+    justify-content: center; */
+}
+
+.grid {
+    display: grid;
+}
+
+/* Web header */
+.web-content {
+    background-color: aqua;
+    min-height: 100dvh;
+    grid-template-rows: auto 1fr;
+}
+
+.web-header .flex {
+    align-items: center;
+}
+
+.web-header__mode-selector {
+    margin-inline-start: auto;
+}
+
+/* Main content */
+.main-content {
+    background-color: wheat;
+
+    grid-template-areas: "header"
+        "main"
+        "save"
+        "generation";
+    grid-template-rows: auto 1fr auto auto;
+}
+
+.actual-mode-info {
+    background-color: teal;
+    grid-area: header;
+}
+
+.generation-buttons {
+    background-color: rgb(172, 62, 84);
+    grid-area: generation;
     align-items: center;
     justify-content: center;
-    gap: 1em;
 }
 
-.web-header {
-    background-color: aqua;
-    padding-block: var(--space-sm);
-
-    .wrapper {
-        display: grid;
-        grid-template-columns: auto 1fr auto;
-        align-items: center;
-        justify-items: center;
-
-        .web-header__logo {
-            justify-self: start;
-        }
-
-        .web-header__generate {
-            justify-self: center;
-        }
-
-        .web-header__nav {
-            justify-self: end;
-        }
-    }
-}
-
-.web-header__generate {
-    margin: auto;
-}
-
-main {
-    outline: 2px red solid;
-    background-color: cadetblue;
-    display: grid;
-    grid-template-rows: 1fr auto;
+.generation-buttons__generate {
+    flex: 1;
 }
 
 .palette {
-    background-color: blueviolet;
+    background-color: rgb(173, 155, 119);
+    grid-area: main;
     flex-direction: column;
-    gap: 0px;
+}
 
-    .palette__color-list {
-        height: 100%;
+.palette__color-list {
+    background-color: blueviolet;
+    flex: 1;
 
-        flex-direction: column;
-        align-items: stretch;
-        gap: var(--space-sm);
-
-        padding-block: var(--space-sm);
-
-        flex: 1;
-    }
+    flex-direction: column;
 }
 
 .color-card {
-    background-color: #FFFFFF;
-    /* max-height: 3rem; */
     flex: 1;
-
+    background-color: #FFFFFF;
     align-content: center;
+    text-align: center;
+}
 
-    .color-card__code {
-        margin: 0;
-        margin: auto;
-    }
+.color-card__code {
+    margin: auto;
 }
 
 .palette__add-color {
     width: 100%;
-    min-width: var(--button-min-size);
-
-    align-self: center;
-    flex: calc(1/10);
 }
 
 .palette-options {
-    background-color: red;
-    padding-block: var(--space-sm);
-    text-align: center;
+    background-color: rgb(69, 155, 122);
+    grid-area: save;
+
+    align-items: center;
 
     .flex {
         flex-direction: column;
     }
 }
+
+.palette-options__number-of-colors p {
+    width: max-content;
+}
+
+.palette-options__save {
+    margin-inline-start: auto;
+}
+
+/* modals */
 
 .settings-dialog[open] {
 
@@ -221,7 +227,6 @@ main {
     }
 }
 
-
 .edit-color-dialog[open] {
     #edit-color-form {
         display: flex;
@@ -238,42 +243,71 @@ main {
     }
 }
 
+.save-palette-dialog[open] {
+    .flex {
+        flex-direction: column;
+        align-items: stretch;
+        justify-content: start;
+    }
+
+    .palette-preview {
+        flex-direction: row;
+        justify-content: center;
+
+        .palette-preview__color {
+            flex: 1;
+            min-height: var(--button-min-size);
+            min-width: var(--button-min-size);
+            border: 1px solid black;
+        }
+    }
+
+    .save-palette-dialog__buttons {
+        flex-direction: row;
+        justify-content: end;
+    }
+}
+
 @media (width >=1020px) {
 
-    .palette {
+    .main-content {
+        grid-template-areas: "header generation"
+            "main main"
+            "save save";
+    }
+
+    .actual-mode-info {
+        margin-inline: initial;
+        margin-inline-start: auto;
+    }
+
+    .generation-buttons {
+        margin-inline: initial;
+        margin-inline-end: auto;
+
+        justify-content: end;
+    }
+
+    .generation-buttons__generate {
+        flex: initial;
+    }
+
+    .palette,
+    .palette__color-list,
+    .palette-options .flex {
         flex-direction: row;
-        gap: var(--space-sm);
 
-        .palette__color-list {
-            flex-direction: row;
-        }
     }
 
-    .palette-options {
-        .flex {
-            flex-direction: row;
-            justify-content: space-between;
-        }
-    }
-
-    .color-card {
-        padding-block-end: var(--space-sm);
-
-        .color-card__code {
-            margin: 0;
-            margin-block: auto;
-        }
-
-        .flex {
-            flex-direction: column;
-            min-height: 100%;
-        }
+    .color-card .flex {
+        flex-direction: column;
+        min-height: 100%;
     }
 
     .palette__add-color {
         height: 100%;
         min-height: var(--button-min-size);
 
-        flex: calc(1/20);
+        flex: calc(1/20); /*Review. Happends when palette__color-list is flex:1*/
     }
 }

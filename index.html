@@ -9,23 +9,37 @@
 </head>
 
 <body>
-    <div class="content-grid">
+    <div class="web-content grid">
+        <!-- 4 sections for the web -->
         <header class="web-header">
-            <div class="wrapper">
-                <div class="web-header__logo">🎨</div>
-                <h1 class="web-header__title hidden">HUEDOCK</h1>
-                <div class="generation-buttons">
-                    <button class="btn web-header__generate" type="button">GENERATE</button>
-                    <button class="btn web-header__settings" type="button" aria-label="settings">Settings</button>
-                </div>
-                <button class="btn web-header__nav" type="button">NAV</button>
+            <div class="wrapper flex">
 
+                <div class="web-header__logo">🎨</div>
+                <h1 class="web-header__title">HueDock</h1>
+
+                <div class="web-header__mode-selector flex">
+                    <!-- Use "a" label? -->
+                    <a href="#">Generator</a>
+                    <a href="#">Saved palettes</a>
+                    <button class="web-header__nav btn hidden" type="button">NAV</button>
+                </div>
             </div>
         </header>
 
-        <main>
-            <section class="palette wrapper flex">
-                <div class="palette__color-list wrapper flex">
+        <main class="main-content grid">
+            <!-- Change class "generator" to "saved-palettes" in js and change the texts -->
+            <header class="actual-mode-info generator wrapper">
+                <h2 class="actual-mode-info__title">Palette Generator</h2>
+                <p class="actual-mode-info__comment">Create your next color combination</p>
+            </header>
+
+            <div class="generation-buttons flex wrapper">
+                <button class="generation-buttons__generate btn" type="button">GENERATE</button>
+                <button class="generation-buttons__settings btn" type="button" aria-label="settings">Settings</button>
+            </div>
+
+            <section class="palette flex wrapper">
+                <div class="palette__color-list flex">
                     <div class="color-card">
                         <div class="wrapper flex">
                             <p class="color-card__code">#000000</p>
@@ -51,19 +65,21 @@
                         </div>
                     </div>
                 </div>
-                <button class="btn palette__add-color" type="button" aria-label="add color">+</button>
+                <button class="palette__add-color btn" type="button" aria-label="add color">+</button>
             </section>
 
-            <section class="palette-options">
-                <div class="wrapper flex">
-                    <button class="btn palette-options__save" type="button">SAVE PALETTE</button>
-                    <button class="btn palette-options__export hidden" type="button">EXPORT</button>
+            <section class="palette-options flex wrapper">
+                <div class="palette-options__number-of-colors">
+                    <p><span class="number-of-colors">5</span> of 5 colors</p>
+                </div>
+                <div class="flex wrapper">
+                    <button class="palette-options__save btn" type="button">SAVE PALETTE</button>
                 </div>
             </section>
-
         </main>
     </div>
 
+    <!-- dialogs and modals -->
     <dialog class="settings-dialog">
         <div class="settings-dialog__content flex">
             <h2>Generate Options</h2>
@@ -92,7 +108,8 @@
                         <input type="color" id="reference-color" name="referenceColor">
                         <input type="text" id="reference-color-code" name="referenceColorCode">
                     </div>
-                    <p class="reference-color-description">The palette will be generated using this color as a reference.</p>
+                    <p class="reference-color-description">The palette will be generated using this color as a
+                        reference.</p>
                 </div>
 
                 <hr>
@@ -122,22 +139,33 @@
         </div>
     </dialog>
 
-    <dialog class="save-palette-dialog" open>
-        <div class="save-palette-content">
-            <form id="save-palette-form">
+    <dialog class="save-palette-dialog">
+        <div class="save-palette-dialog__content flex">
+            <header class="save-palette-dialog__header">
                 <h2>Save palette</h2>
                 <p>Give your palette a name to find it later</p>
+                <hr>
+            </header>
 
-                <div class="save-palette__name">
+            <form id="save-palette-dialog__form">
+                <div class="save-palette-dialog__name flex">
                     <label for="palette-name">Palette name:</label>
-                    <input type="text" name="paletteName" id="palette-name" placeholder="My new palette">
+                    <input type="text" id="palette-name" name="paletteName" placeholder="My new palette">
+                    <p>Choose a name you'll recognize later.</p>
                 </div>
 
-                <p>Preview</p>
-                <div class="palette-preview flex">
-                    <div class="palette-preview__color">Color</div>
-                    <div class="palette-preview__color">Color</div>
-                    <div class="palette-preview__color">Color</div>
+                <div class="save-palette-dialog__palette-preview">
+                    <h2>Palette preview</h2>
+                    <div class="palette-preview flex">
+                        <div class="palette-preview__color"></div>
+                        <div class="palette-preview__color"></div>
+                        <div class="palette-preview__color"></div>
+                    </div>
+                </div>
+                <hr>
+                <div class="save-palette-dialog__buttons flex">
+                    <button type="button">Cancel</button>
+                    <button type="submit">Save palette</button>
                 </div>
             </form>
         </div>
