@@ -42,9 +42,9 @@ let editingColorCard = null;
 // DOM Elements
 
 // Generate button & modals
-const generateBtn = document.querySelector(".web-header__generate");
+const generateBtn = document.querySelector(".generation-buttons__generate");
 
-const settingsBtn = document.querySelector(".web-header__settings");
+const settingsBtn = document.querySelector(".generation-buttons__settings");
 const settingsModal = document.querySelector(".settings-dialog");
 const settingsForm = settingsModal.querySelector("#settings-dialog__form");
 const settingsModeDescription = settingsModal.querySelector(".generation-mode__description");

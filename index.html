@@ -6,6 +6,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="css/main.css">
     <title>HueDock</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
 </head>
 
 <body>
@@ -13,14 +19,13 @@
         <!-- 4 sections for the web -->
         <header class="web-header">
             <div class="wrapper flex">
-
                 <div class="web-header__logo">🎨</div>
                 <h1 class="web-header__title">HueDock</h1>
 
                 <div class="web-header__mode-selector flex">
                     <!-- Use "a" label? -->
-                    <a href="#">Generator</a>
-                    <a href="#">Saved palettes</a>
+                    <a href="#" class="nav-link nav-link--active">Generator</a>
+                    <a href="#" class="nav-link">Saved palettes</a>
                     <button class="web-header__nav btn hidden" type="button">NAV</button>
                 </div>
             </div>
@@ -28,14 +33,19 @@
 
         <main class="main-content grid">
             <!-- Change class "generator" to "saved-palettes" in js and change the texts -->
-            <header class="actual-mode-info generator wrapper">
-                <h2 class="actual-mode-info__title">Palette Generator</h2>
-                <p class="actual-mode-info__comment">Create your next color combination</p>
+            <header class="actual-mode-info generator">
+                <div class="wrapper">
+                    <h2 class="actual-mode-info__title">Palette Generator</h2>
+                    <p class="actual-mode-info__comment">Find your perfect color combination</p>
+                </div>
             </header>
 
-            <div class="generation-buttons flex wrapper">
-                <button class="generation-buttons__generate btn" type="button">GENERATE</button>
-                <button class="generation-buttons__settings btn" type="button" aria-label="settings">Settings</button>
+            <div class="generation-buttons">
+                <div class="flex wrapper">
+                    <button class="generation-buttons__generate btn" type="button">Generate</button>
+                    <button class="generation-buttons__settings btn" type="button"
+                        aria-label="settings">Settings</button>
+                </div>
             </div>
 
             <section class="palette flex wrapper">
@@ -43,7 +53,7 @@
                     <div class="color-card">
                         <div class="wrapper flex">
                             <p class="color-card__code">#000000</p>
-                            <button class="btn color-card__lock" type="button" aria-label="block">BLOCK</button>
+                            <button class="btn color-card__lock" type="button" aria-label="block">LOCK</button>
                             <button class="btn color-card__edit" type="button" aria-label="edit">EDIT</button>
                             <button class="btn color-card__delete" type="button" aria-label="delete">DELETE</button>
                         </div>
@@ -51,7 +61,7 @@
                     <div class="color-card">
                         <div class="wrapper flex">
                             <p class="color-card__code">#000000</p>
-                            <button class="btn color-card__lock" type="button" aria-label="block">BLOCK</button>
+                            <button class="btn color-card__lock" type="button" aria-label="block">LOCK</button>
                             <button class="btn color-card__edit" type="button" aria-label="edit">EDIT</button>
                             <button class="btn color-card__delete" type="button" aria-label="delete">DELETE</button>
                         </div>
@@ -59,7 +69,7 @@
                     <div class="color-card">
                         <div class="wrapper flex">
                             <p class="color-card__code">#000000</p>
-                            <button class="btn color-card__lock" type="button" aria-label="block">BLOCK</button>
+                            <button class="btn color-card__lock" type="button" aria-label="block">LOCK</button>
                             <button class="btn color-card__edit" type="button" aria-label="edit">EDIT</button>
                             <button class="btn color-card__delete" type="button" aria-label="delete">DELETE</button>
                         </div>
@@ -68,12 +78,14 @@
                 <button class="palette__add-color btn" type="button" aria-label="add color">+</button>
             </section>
 
-            <section class="palette-options flex wrapper">
-                <div class="palette-options__number-of-colors">
-                    <p><span class="number-of-colors">5</span> of 5 colors</p>
-                </div>
+            <section class="palette-options">
                 <div class="flex wrapper">
-                    <button class="palette-options__save btn" type="button">SAVE PALETTE</button>
+                    <div class="palette-options__number-of-colors">
+                        <p><span class="number-of-colors">3</span> of 5 colors</p>
+                    </div>
+                    <div class="flex wrapper">
+                        <button class="palette-options__save btn" type="button">Save palette</button>
+                    </div>
                 </div>
             </section>
         </main>
@@ -81,13 +93,13 @@
 
     <!-- dialogs and modals -->
     <dialog class="settings-dialog">
-        <div class="settings-dialog__content flex">
-            <h2>Generate Options</h2>
+        <div class="settings-dialog__content">
+            <h2>Generate Settings</h2>
             <p>Customize how your palettes are generated.</p>
             <hr>
 
             <form id="settings-dialog__form">
-                <div class="settings-dialog__generation-mode flex">
+                <div class="settings-dialog__generation-mode">
                     <label for="generation-mode">Generation mode:</label>
                     <select id="generation-mode" name="generationMode">
                         <option value="random" selected>Random</option>
@@ -96,9 +108,8 @@
                     <p class="generation-mode__description">Choose random colors.</p>
                 </div>
 
-                <div class="settings-dialog__reference-color flex">
-
-                    <div class="settings-dialog__reference-color-check" flex>
+                <div class="settings-dialog__reference-color">
+                    <div class="settings-dialog__reference-color-check">
                         <input type="checkbox" id="reference-color-checkbox" name="referenceColorCheckbox">
                         <label for="reference-color-checkbox">Use reference color</label>
                     </div>
@@ -110,9 +121,9 @@
                     </div>
                     <p class="reference-color-description">The palette will be generated using this color as a
                         reference.</p>
+                    <hr>
                 </div>
 
-                <hr>
                 <div class="settings-dialog__buttons flex">
                     <button type="button">Cancel</button>
                     <button type="submit">Apply settings</button>
