@@ -57,7 +57,7 @@ const settingsCloseBtn = settingsModal.querySelector("button[type=button]");
 const editColorModal = document.querySelector(".edit-color-dialog");
 const editColorCodeInput = editColorModal.querySelector("#actual-color__code");
 const editActualColorInput = editColorModal.querySelector(".actual-color");
-const editColorCloseBtn = editColorModal.querySelector(".edit-color-dialog__buttons button")
+const editColorCloseBtn = editColorModal.querySelector(".dialog__buttons button")
 
 const savePaletteBtn = document.querySelector(".palette-options__save");
 const savePaletteModal = document.querySelector(".save-palette-dialog");
@@ -74,6 +74,17 @@ const addColorBtn = document.querySelector(".palette__add-color");
 
 const palettePreview = document.querySelector(".palette-preview");
 
+// Color count
+const paletteNColors = document.querySelector(".palette-options .number-of-colors");
+const savePaletteModalNColors = savePaletteModal.querySelector(".number-of-colors");
+
+// Mode links & Views
+const generatorModeLink = document.querySelector("#generator-mode");
+const savedPalettesModeLink = document.querySelector("#saved-palettes-mode");
+
+const generatorModeView = document.querySelector(".generator-view");
+const savedPalettesModeView = document.querySelector(".saved-palettes-view");
+
 /////////////////////////////////////////
 
 // Initial palette
@@ -89,7 +100,33 @@ generateBtn.addEventListener("click", () => {
 })
 
 /////////////////////////////////////////
-// Settings modal
+
+// Nav links
+generatorModeLink.addEventListener("click", (e) => {
+    e.preventDefault();
+
+    if (!generatorModeLink.classList.contains("nav-link--active")) {
+        generatorModeLink.classList.add("nav-link--active");
+        savedPalettesModeLink.classList.remove("nav-link--active");
+
+        generatorModeView.classList.remove("hidden");
+        savedPalettesModeView.classList.add("hidden");
+    }
+})
+
+savedPalettesModeLink.addEventListener("click", (e) => {
+    e.preventDefault();
+
+    if (!savedPalettesModeLink.classList.contains("nav-link--active")) {
+        savedPalettesModeLink.classList.add("nav-link--active");
+        generatorModeLink.classList.remove("nav-link--active");
+
+        generatorModeView.classList.add("hidden");
+        savedPalettesModeView.classList.remove("hidden");
+    }
+})
+
+// Modals
 
 // settings modal
 settingsBtn.addEventListener("click", () => {
@@ -192,10 +229,10 @@ savePaletteModal.addEventListener("submit", (e) => {
     e.preventDefault();
     // save palette preview data => paletteObj to Database
     paletteObj.paletteName = savePaletteNameInput.value;
-    
+
     const newPalette = {
         paletteName: paletteObj.paletteName,
-        colors:[...paletteObj.colors]
+        colors: [...paletteObj.colors]
     };
 
     SAVED_PALETTES.push(newPalette);
@@ -218,13 +255,16 @@ palette.addEventListener("click", (e) => {
                 colorCard.remove();
                 updatePalette();
 
-                //update palette preview too
+                // update palette preview too
                 let palettePreviewColors = (savePaletteModal.querySelectorAll(".palette-preview__color"));
+                palettePreviewColors[0].remove(); // remove 1 color. Preview updates when use save palette BTN
 
-                palettePreviewColors[0].remove(); //Remove 1 color. Preview updates when use save palette BTN
+                // update number colors text
+                paletteNColors.textContent = palettePreviewColors.length - 1;
+                savePaletteModalNColors.textContent = palettePreviewColors.length - 1;
 
-                if (addColorBtn.classList.contains("hidden"))
-                    addColorBtn.classList.remove("hidden");
+                addColorBtn.classList.remove("hidden");
+                updateDeleteIcons();
             }
         }
     }
@@ -235,6 +275,18 @@ palette.addEventListener("click", (e) => {
     if (lockBtn) {
         const colorCard = lockBtn.closest(".color-card");
         colorCard.classList.toggle("locked");
+
+        const lockIcon = lockBtn.querySelector("img");
+
+        if (colorCard.classList.contains("locked")) {
+            lockIcon.src = "assets/icons/lock.svg";
+            lockBtn.setAttribute("aria-label", "Unlock color");
+        } else {
+            lockIcon.src = "assets/icons/lock-open.svg";
+            lockBtn.setAttribute("aria-label", "Lock color");
+        }
+
+        updateDeleteIcons();
     }
 
     // Edit color
@@ -263,6 +315,13 @@ addColorBtn.addEventListener("click", () => {
     if (paletteColorCards.length < MAX_COLOR_CARDS) {
         createColorCard(palette);
         updatePalette();
+
+        // update number colors text
+        paletteNColors.textContent = paletteColorCards.length + 1;
+        savePaletteModalNColors.textContent = paletteColorCards.length + 1;
+
+        // update delete img
+        updateDeleteIcons();
     }
 
     if (paletteColorCards.length === MAX_COLOR_CARDS - 1) {
@@ -274,20 +333,39 @@ addColorBtn.addEventListener("click", () => {
 
 // Create color card
 function createColorCard(palette) {
+    // create
     const colorCard = document.createElement("div");
     const colorCardWrapper = document.createElement("div");
     const colorCardCode = document.createElement("p");
-    const colorCardLockBtn = document.createElement("button");
-    const colorCardEditBtn = document.createElement("button");
-    const colorCardDeleteBtn = document.createElement("button");
 
+    const colorCardLockBtn = document.createElement("button");
+    const colorCardLockIcon = document.createElement("img");
+
+    const colorCardEditBtn = document.createElement("button");
+    const colorCardEditIcon = document.createElement("img");
+
+    const colorCardDeleteBtn = document.createElement("button");
+    const colorCardDeleteIcon = document.createElement("img");
+
+    // update values
     colorCard.classList.add("color-card");
     colorCardWrapper.classList.add("wrapper", "flex");
     colorCardCode.classList.add("color-card__code");
 
-    colorCardLockBtn.classList.add("btn", "color-card__lock");
-    colorCardEditBtn.classList.add("btn", "color-card__edit");
-    colorCardDeleteBtn.classList.add("btn", "color-card__delete");
+    colorCardLockBtn.classList.add("btn", "btn--color-action", "color-card__lock");
+    colorCardLockBtn.ariaLabel = "block";
+    colorCardLockIcon.classList.add("btn__icon");
+    colorCardLockIcon.src = "assets/icons/lock-open.svg";
+
+    colorCardEditBtn.classList.add("btn", "btn--color-action", "color-card__edit");
+    colorCardEditBtn.ariaLabel = "edit";
+    colorCardEditIcon.classList.add("btn__icon");
+    colorCardEditIcon.src = "assets/icons/pencil-sparkles.svg"
+
+    colorCardDeleteBtn.classList.add("btn", "btn--color-action", "color-card__delete");
+    colorCardDeleteBtn.ariaLabel = "delete";
+    colorCardDeleteIcon.classList.add("btn__icon");
+    colorCardDeleteIcon.src = "assets/icons/trash.svg"
 
     colorCardLockBtn.type = "button";
     colorCardEditBtn.type = "button";
@@ -296,16 +374,17 @@ function createColorCard(palette) {
     colorCard.style.backgroundColor = "#FFFFFF";
     colorCardCode.textContent = "#FFFFFF";
 
-    colorCardLockBtn.textContent = "LOCK";
-    colorCardEditBtn.textContent = "EDIT";
-    colorCardDeleteBtn.textContent = "DELETE";
-
+    // append
     colorCardWrapper.append(
         colorCardCode,
         colorCardLockBtn,
         colorCardEditBtn,
         colorCardDeleteBtn
     );
+
+    colorCardLockBtn.append(colorCardLockIcon);
+    colorCardEditBtn.append(colorCardEditIcon);
+    colorCardDeleteBtn.append(colorCardDeleteIcon);
 
     colorCard.append(colorCardWrapper);
     colorCardList.append(colorCard);
@@ -371,7 +450,6 @@ function randomNumberGenerator(min, max) {
 /////////////////////////////////////////
 
 // Render Color Cards
-
 function renderColorCards() {
     const paletteColorCards = palette.querySelectorAll(".color-card");
 
@@ -389,7 +467,6 @@ function renderColorCards() {
 }
 
 // Update Palette
-
 function updatePalette() {
     const paletteColorCards = palette.querySelectorAll(".color-card");
 
@@ -422,5 +499,22 @@ function updateReferenceControls() {
     } else {
         settingsColorDescription.textContent =
             settingsObj.referenceColorDescriptions[1][1];
+    }
+}
+
+// Update color cards icons
+function updateDeleteIcons() {
+    const cards = colorCardList.querySelectorAll(".color-card");
+    const isMinimum = cards.length <= MIN_COLOR_CARDS;
+
+    for (const card of cards) {
+        const deleteIcon = card.querySelector(".color-card__delete img");
+        const isLocked = card.classList.contains("locked");
+
+        if (isMinimum || isLocked) {
+            deleteIcon.src = "assets/icons/trash-off.svg";
+        } else {
+            deleteIcon.src = "assets/icons/trash.svg";
+        }
     }
 }
