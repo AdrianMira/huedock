@@ -133,106 +133,11 @@
                             <h2>Saved Palettes</h2>
                             <p>Your favorite color combinations, all in one place.</p>
                         </div>
-                        <p><span class="number-of-palettes">3</span> saved</p>
+                        <p><span class="number-of-palettes">0</span> saved</p>
                     </header>
 
                     <div class="saved-palettes__list grid">
 
-                        <p class="hidden">Empty</p>
-
-                        <article class="saved-palette">
-                            <div class="wrapper">
-                                <div class="saved-palette__info">
-                                    <h3>Palette name</h3>
-                                    <p><span class="saved-palette__number-of-colors">3</span> colors</p>
-                                </div>
-                                <div class="saved-palette__preview flex">
-                                    <div class="saved-palette__color"></div>
-                                    <div class="saved-palette__color"></div>
-                                    <div class="saved-palette__color"></div>
-                                </div>
-                                <div class="saved-palette__buttons flex">
-                                    <button class="btn btn--primary" type="button">
-                                        <img src="assets/icons/move-up-right.svg" class="btn__icon" alt="">
-                                        Load
-                                    </button>
-                                    <button class="btn btn--danger" type="button" aria-label="Delete palette">
-                                        <img src="assets/icons/trash.svg" class="btn__icon" alt="">
-                                    </button>
-                                </div>
-                            </div>
-                        </article>
-
-                        <article class="saved-palette">
-                            <div class="wrapper">
-                                <div class="saved-palette__info">
-                                    <h3>Palette name</h3>
-                                    <p><span class="saved-palette__number-of-colors">3</span> colors</p>
-                                </div>
-                                <div class="saved-palette__preview flex">
-                                    <div class="saved-palette__color"></div>
-                                    <div class="saved-palette__color"></div>
-                                    <div class="saved-palette__color"></div>
-                                </div>
-                                <div class="saved-palette__buttons flex">
-                                    <button class="btn btn--primary" type="button">
-                                        <img src="assets/icons/move-up-right.svg" class="btn__icon" alt="">
-                                        Load
-                                    </button>
-                                    <button class="btn btn--danger" type="button" aria-label="Delete palette">
-                                        <img src="assets/icons/trash.svg" class="btn__icon" alt="">
-                                    </button>
-                                </div>
-                            </div>
-                        </article>
-
-                        <article class="saved-palette">
-                            <div class="wrapper">
-                                <div class="saved-palette__info">
-                                    <h3>Palette name</h3>
-                                    <p><span class="saved-palette__number-of-colors">3</span> colors</p>
-                                </div>
-                                <div class="saved-palette__preview flex">
-                                    <div class="saved-palette__color"></div>
-                                    <div class="saved-palette__color"></div>
-                                    <div class="saved-palette__color"></div>
-                                </div>
-                                <div class="saved-palette__buttons flex">
-                                    <button class="btn btn--primary" type="button">
-                                        <img src="assets/icons/move-up-right.svg" class="btn__icon" alt="">
-                                        Load
-                                    </button>
-                                    <button class="btn btn--danger" type="button" aria-label="Delete palette">
-                                        <img src="assets/icons/trash.svg" class="btn__icon" alt="">
-                                    </button>
-                                </div>
-                            </div>
-                        </article>
-
-                        <article class="saved-palette">
-                            <div class="wrapper">
-                                <div class="saved-palette__info">
-                                    <h3>Palette name</h3>
-                                    <p><span class="saved-palette__number-of-colors">3</span> colors</p>
-                                </div>
-                                <div class="saved-palette__preview flex">
-                                    <div class="saved-palette__color"></div>
-                                    <div class="saved-palette__color"></div>
-                                    <div class="saved-palette__color"></div>
-                                </div>
-                                <div class="saved-palette__buttons flex">
-                                    <button class="btn btn--primary" type="button">
-                                        <img src="assets/icons/move-up-right.svg" class="btn__icon" alt="">
-                                        Load
-                                    </button>
-                                    <button class="btn btn--danger" type="button" aria-label="Delete palette">
-                                        <img src="assets/icons/trash.svg" class="btn__icon" alt="">
-                                    </button>
-                                </div>
-                            </div>
-                        </article>
-
-                        
                     </div>
                 </div>
             </section>
@@ -315,7 +220,8 @@
             <form id="save-palette-dialog__form">
                 <div class="save-palette-dialog__name">
                     <label for="palette-name">Palette name</label>
-                    <input type="text" id="palette-name" name="paletteName" placeholder="My new palette">
+                    <input type="text" id="palette-name" name="paletteName" placeholder="My new palette" required
+                        maxlength="50">
                     <p>Choose a name you'll recognize later.</p>
                 </div>
 
@@ -339,6 +245,20 @@
         </div>
     </dialog>
 
+    <dialog class="dialog dialog-delete-palette">
+        <div class="dialog-delete-palette__content">
+            <h2>Delete palette?</h2>
+            <p>Are you sure you want to delete <span class="palette-name">""</span>? This action cannot be undone</p>
+            <hr>
+            <div class="dialog__buttons flex">
+                <button class="btn btn--secondary">Cancel</button>
+                <button class="btn btn--danger">Delete palette</button>
+            </div>
+        </div>
+    </dialog>
+
+
+
     <aside class="dialog sidebar hidden">
         <nav class="sidebar__nav">
             <a href="#" class="sidebar__link">SAVED PALETTES</a>
@@ -351,5 +271,30 @@
 
     <script type="module" src="js/script.js"></script>
 </body>
+
+
+
+<article class="saved-palette hidden">
+    <div class="wrapper">
+        <div class="saved-palette__info">
+            <h3>Palette name</h3>
+            <p><span class="saved-palette__number-of-colors">3</span> colors</p>
+        </div>
+        <div class="saved-palette__preview flex">
+            <div class="saved-palette__color"></div>
+            <div class="saved-palette__color"></div>
+            <div class="saved-palette__color"></div>
+        </div>
+        <div class="saved-palette__buttons flex">
+            <button class="btn btn--primary" type="button">
+                <img src="assets/icons/move-up-right.svg" class="btn__icon" alt="">
+                Load
+            </button>
+            <button class="btn btn--danger" type="button" aria-label="Delete palette">
+                <img src="assets/icons/trash.svg" class="btn__icon" alt="">
+            </button>
+        </div>
+    </div>
+</article>
 
 </html>

@@ -677,6 +677,12 @@ body {
 ////////////////////// */
 
 /* SAVED PALETTES */
+.empty-message {
+    display: flex;
+    justify-content: center;
+    margin-block-start: var(--space-2xl);
+}
+
 .saved-palettes__header {
     align-items: center;
     justify-content: space-between;
