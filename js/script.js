@@ -8,7 +8,7 @@ const paletteObj = {
     ]
 };
 
-const SAVED_PALETTES = [];
+let savedPalettes = [];
 
 // Settings
 const settingsObj = {
@@ -124,7 +124,7 @@ generatorModeLink.addEventListener("click", (e) => {
     }
 })
 
-savedPalettesModeLink.addEventListener("click", (e) => {
+savedPalettesModeLink.addEventListener("click", async (e) => {
     e.preventDefault();
 
     if (!savedPalettesModeLink.classList.contains("nav-link--active")) {
@@ -133,6 +133,29 @@ savedPalettesModeLink.addEventListener("click", (e) => {
 
         generatorModeView.classList.add("hidden");
         savedPalettesModeView.classList.remove("hidden");
+    }
+
+    // Fetch --> Show all palettes (GET)
+    const url = "/api/palettes";
+    const headers = new Headers({ "Content-Type": "application/json" });
+    const obj = {
+        method: "GET",
+        headers
+    }
+    try {
+        const response = await fetch(url, obj);
+        if (!response.ok) {
+            throw new Error(`HTTP ERROR: ${response.status}`)
+        }
+        const data = await response.json();
+        console.log(data);
+
+        savedPalettes = [...data];
+        console.log(savedPalettes);
+        renderSavedPalettes();
+
+    } catch (error) {
+        console.error("Error finding palettes:", error);
     }
 })
 
@@ -243,27 +266,51 @@ savePaletteCloseBtn.addEventListener("click", () => {
 })
 
 // ID count for access to palette. With database this will change.
-let idPalette = 0;
+// let idPalette = 0;
+console.log(paletteObj.colors);
+console.log(savedPalettes);
 
-savePaletteModal.addEventListener("submit", (e) => {
+savePaletteModal.addEventListener("submit", async (e) => {
     e.preventDefault();
     // save palette preview data => paletteObj to Database
     paletteObj.paletteName = savePaletteNameInput.value;
 
     const newPalette = {
-        idPalette,
         paletteName: paletteObj.paletteName,
         colors: [...paletteObj.colors]
     };
 
-    SAVED_PALETTES.push(newPalette);
-    idPalette = idPalette + 1;
+    // fetch -> Send request
 
-    savePaletteModal.close();
-    savePaletteNameInput.value = "";
+    const url = "/api/palettes";
+    const headers = new Headers({ "Content-Type": "application/json" });
+    const obj = {
+        method: "POST",
+        headers,
+        body: JSON.stringify(newPalette)
+    }
 
-    console.log(SAVED_PALETTES);
-    renderSavedPalettes();
+    try {
+        const response = await fetch(url, obj);
+        if (!response.ok) {
+            throw new Error(`HTTP ERROR: ${response.status}`)
+        }
+        const data = await response.json();
+        // SAVED_PALETTES.push(data);
+
+        console.log("Paleta guardada:", data);
+        // console.log(SAVED_PALETTES);
+
+        savePaletteModal.close();
+        savePaletteNameInput.value = "";
+
+        renderSavedPalettes();
+
+    } catch (error) {
+        console.error("Error al guardar la paleta:", error);
+        return;
+    }
+
 })
 
 // palette
@@ -369,8 +416,8 @@ savedPalettesList.addEventListener("click", (e) => {
         const paletteCardLoaded = paletteLoadBtn.closest(".saved-palette");
         const paletteId = Number(paletteCardLoaded.dataset.id);
 
-        const paletteLoaded = SAVED_PALETTES.find((palette) => {
-            return palette.idPalette === paletteId;
+        const paletteLoaded = savedPalettes.find((palette) => {
+            return palette.id === paletteId;
         });
 
         if (paletteLoaded) {
@@ -423,6 +470,7 @@ savedPalettesList.addEventListener("click", (e) => {
         namePaleteModal.textContent = paletteName.textContent;
 
         deletePaleteModal.dataset.idDelete = paletteCardLoaded.dataset.id;
+        console.log(deletePaleteModal.dataset.idDelete);
     }
 })
 
@@ -430,19 +478,40 @@ deletePaleteModalCancelBtn.addEventListener("click", () => {
     deletePaleteModal.close();
 })
 
-deletePaleteModalConfirmBtn.addEventListener("click", () => {
-    // Borrar estado
-
-    const paletteDeletedIndex = SAVED_PALETTES.findIndex((palette) => {
-        return palette.idPalette === Number(deletePaleteModal.dataset.idDelete);
+deletePaleteModalConfirmBtn.addEventListener("click", async () => {
+    // Fetch --> DELETE palette
+    const paletteDeletedIndex = savedPalettes.findIndex((palette) => {
+        return palette.id === Number(deletePaleteModal.dataset.idDelete);
     });
 
-    if (paletteDeletedIndex !== -1) {
-        SAVED_PALETTES.splice(paletteDeletedIndex, 1);
-        renderSavedPalettes();
+    console.log("id", savedPalettes[paletteDeletedIndex]);
+
+    const url = `/api/palettes/${savedPalettes[paletteDeletedIndex].id}`;
+    const headers = new Headers({ "Content-Type": "application/json" });
+    const obj = {
+        method: "DELETE",
+        headers
     }
 
-    deletePaleteModal.close();
+    try {
+        const response = await fetch(url, obj);
+        if (!response.ok) {
+            throw new Error(`HTTP ERROR: ${response.status}`);
+        }
+        const data = await response.json();
+        console.log(data);
+
+        // Borrar estado
+        if (paletteDeletedIndex !== -1) {
+            savedPalettes.splice(paletteDeletedIndex, 1);
+            renderSavedPalettes();
+        }
+    } catch (error) {
+        console.error("Error deleting palette:", error);
+    } finally {
+        deletePaleteModal.close();
+    }
+
 })
 
 /////////////////////////////////////////
@@ -533,7 +602,7 @@ function generateRandomPalette() {
         if (colorCard.classList.contains("locked")) {
             continue;
         }
-        paletteObj.colors[i] = generateRandomColor();
+        paletteObj.colors[i] = rgbStringToHex(generateRandomColor());
     }
 }
 
@@ -563,6 +632,32 @@ function randomNumberGenerator(min, max) {
     return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 
+function rgbToHex(r, g, b) {
+    let hexCode = "#"
+    const hexRed = (r).toString(16).padStart(2, "0");
+    const hexGreen = (g).toString(16).padStart(2, "0");
+    const hexBlue = (b).toString(16).padStart(2, "0");
+
+    hexCode = hexCode.concat(hexRed, hexGreen, hexBlue);
+    return hexCode.toUpperCase();
+}
+
+function rgbStringToHex(rgbString) {
+    if (rgbString.startsWith("#") && rgbString.length === 7) {
+        return rgbString;
+    }
+
+    const values = rgbString.replace("rgb(", "").replace(")", "");
+
+    const channels = values.split(",");
+
+    const r = Number(channels[0].trim());
+    const g = Number(channels[1].trim());
+    const b = Number(channels[2].trim());
+
+    return rgbToHex(r, g, b);
+}
+
 /////////////////////////////////////////
 
 // Render Color Cards
@@ -577,7 +672,7 @@ function renderColorCards() {
 
         if (currentColor != null) {
             colorCard.style.backgroundColor = currentColor;
-            colorCode.textContent = currentColor;
+            colorCode.textContent = rgbStringToHex(currentColor);
         }
     }
 }
@@ -591,7 +686,7 @@ function updatePalette() {
     for (const colorCard of paletteColorCards) {
         const color = colorCard.style.backgroundColor || "#FFFFFF";
 
-        paletteObj.colors.push(color);
+        paletteObj.colors.push(rgbStringToHex(color));
     }
 
     // console.log("Palette updated:", paletteObj);
@@ -605,9 +700,9 @@ function updatePalette() {
 function renderSavedPalettes() {
     savedPalettesList.innerHTML = "";
 
-    numberPalettes.textContent = SAVED_PALETTES.length;
+    numberPalettes.textContent = savedPalettes.length;
 
-    if (SAVED_PALETTES.length === 0) {
+    if (savedPalettes.length === 0) {
         const emptyMessageDiv = document.createElement("div");
         emptyMessageDiv.classList.add("empty-message");
 
@@ -619,7 +714,7 @@ function renderSavedPalettes() {
         return;
     }
 
-    for (const palette of SAVED_PALETTES) {
+    for (const palette of savedPalettes) {
 
         // Create elements
         const savedPalette = document.createElement("article");
@@ -656,7 +751,7 @@ function renderSavedPalettes() {
         savedPaletteDeleteIcon.classList.add("btn__icon");
 
         // Attributes and values
-        savedPalette.dataset.id = palette.idPalette;
+        savedPalette.dataset.id = palette.id;
 
         savedPaletteName.textContent = palette.paletteName;
         savedPaletteNColorsSpan.textContent = palette.colors.length;
@@ -705,7 +800,7 @@ function renderSavedPalettes() {
         // Insert into DOM
         savedPalettesList.append(savedPalette);
     }
-    numberPalettes.textContent = SAVED_PALETTES.length;
+    numberPalettes.textContent = savedPalettes.length;
 }
 
 /////////////////////////////////////////
