@@ -14,11 +14,15 @@ let savedPalettes = [];
 const settingsObj = {
     generationModes: {
         random: generateRandomPalette,
-        harmonious: generateHarmoniousPalette
+        complementary: generateComplementaryPalette,
+        analogous: generateAnalogousPalette,
+        triadic: generateTriadicPalette
     },
     modeDescriptions: {
         random: "Creates palette with random colors",
-        harmonious: "Fill palette with white colors"
+        complementary: "Fill palette with complementary colors",
+        analogous: "Creates palettes using neighboring colors on the color wheel",
+        triadic: "Creates palettes using three colors equally spaced on the color wheel"
     },
     actualMode: "random",
     referenceColor: null,
@@ -585,12 +589,42 @@ function createColorCard() {
 /////////////////////////////////////////
 
 // Palette Generation Algorithms
+
+
 function generatePalette() {
-    const generationMode = settingsObj.generationModes[settingsObj.actualMode]
-    generationMode();
+    const colorCards = palette.querySelectorAll(".color-card");
+    const unlockedIndexes = [];
+
+    // Find unlocked cards
+    for (let i = 0; i < colorCards.length; i++) {
+        if (!colorCards[i].classList.contains("locked")) {
+            unlockedIndexes.push(i);
+        }
+    }
+
+    if (unlockedIndexes.length === 0) return;
+
+    const generationMode = settingsObj.generationModes[settingsObj.actualMode];
+
+    if (settingsObj.actualMode === "random") {
+        generationMode();
+    } else {
+        // First pass: generate hues
+        const hues = generationMode(unlockedIndexes.length);
+
+        // Second pass: apply a visual style
+        const colors = applyRandomStyle(hues);
+
+        // Update unlocked colors
+        for (let i = 0; i < unlockedIndexes.length; i++) {
+            const originalIndex = unlockedIndexes[i];
+            paletteObj.colors[originalIndex] = colors[i];
+        }
+    }
 
     renderColorCards();
 }
+
 
 function generateRandomPalette() {
     const paletteColorCards = palette.querySelectorAll(".color-card");
@@ -602,23 +636,202 @@ function generateRandomPalette() {
         if (colorCard.classList.contains("locked")) {
             continue;
         }
-        paletteObj.colors[i] = rgbStringToHex(generateRandomColor());
+        paletteObj.colors[i] = generateRandomColor();
     }
 }
 
-function generateHarmoniousPalette() {
-    const paletteColorCards = palette.querySelectorAll(".color-card");
+function generateComplementaryPalette(totalColors) {
+    let h;
 
-    for (let i = 0; i < paletteColorCards.length; i++) {
-        const colorCard = paletteColorCards[i];
+    if (settingsObj.useReferenceColor) {
+        const referenceColor = hexToHsl(settingsObj.referenceColor);
+        h = referenceColor.h;
+    } else {
+        h = randomNumberGenerator(0, 359);
+    }
 
-        // Do not change locked colors
-        if (colorCard.classList.contains("locked")) {
-            continue;
+    const hComp = (h + 180) % 360;
+    const mainColorsCount = Math.ceil(totalColors / 2);
+    const hues = [];
+
+    for (let i = 0; i < totalColors; i++) {
+        if (i < mainColorsCount) {
+            hues.push(h);
+        } else {
+            hues.push(hComp);
         }
-        paletteObj.colors[i] = "#FFFFFF";
     }
+
+    return hues;
 }
+
+function generateAnalogousPalette(totalColors) {
+    let h;
+
+    if (settingsObj.useReferenceColor) {
+        const referenceColor = hexToHsl(settingsObj.referenceColor);
+        h = referenceColor.h;
+    } else {
+        h = randomNumberGenerator(0, 359);
+    }
+
+    const direction = randomNumberGenerator(0, 1);
+    const hues = [];
+
+    for (let i = 0; i < totalColors; i++) {
+        let hueOffset = i * 15;
+
+        if (direction === 0) {
+            hueOffset = -hueOffset;
+        }
+
+        const newHue = (h + hueOffset + 360) % 360;
+        hues.push(newHue);
+    }
+
+    return hues;
+}
+
+function generateTriadicPalette(totalColors) {
+    let h;
+
+    if (settingsObj.useReferenceColor) {
+        const referenceColor = hexToHsl(settingsObj.referenceColor);
+        h = referenceColor.h;
+    } else {
+        h = randomNumberGenerator(0, 359);
+    }
+
+    const hues = [];
+    const triadicHues = [h, (h + 120) % 360, (h + 240) % 360];
+
+    for (let i = 0; i < totalColors; i++) {
+        const hueIndex = i % 3;
+        hues.push(triadicHues[hueIndex]);
+    }
+
+    return hues;
+}
+
+
+
+
+
+
+function applyRandomStyle(hues) {
+    const colors = [];
+    const usedColors = [];
+    const style = randomNumberGenerator(1, 5);
+    const mainColorIndex = randomNumberGenerator(0, hues.length - 1);
+    const lightAccentIndex = randomNumberGenerator(0, hues.length - 1);
+
+    // Random positions for neutral colors
+    const neutralIndexes = [];
+
+    if (style === 5 && hues.length >= 3) {
+        let neutralCount = 1;
+
+        if (hues.length >= 4) {
+            neutralCount = randomNumberGenerator(1, 2);
+        }
+
+        while (neutralIndexes.length < neutralCount) {
+            const index = randomNumberGenerator(0, hues.length - 1);
+
+            if (!neutralIndexes.includes(index)) {
+                neutralIndexes.push(index);
+            }
+        }
+    }
+
+    for (let i = 0; i < hues.length; i++) {
+        const h = hues[i];
+        let s;
+        let l;
+        let attempts = 0;
+        let isSimilar;
+
+        do {
+            if (style === 1) {
+                // Pastel
+                s = randomNumberGenerator(45, 75);
+                l = randomNumberGenerator(65, 85);
+            } else if (style === 2) {
+                // Vibrant
+                s = randomNumberGenerator(70, 95);
+                l = randomNumberGenerator(35, 70);
+            } else if (style === 3) {
+                // Dark with a light accent
+                if (i === lightAccentIndex) {
+                    s = randomNumberGenerator(40, 75);
+                    l = randomNumberGenerator(65, 80);
+                } else {
+                    s = randomNumberGenerator(35, 80);
+                    l = randomNumberGenerator(25, 45);
+                }
+            } else if (style === 4) {
+                // Main color and secondary colors
+                if (i === mainColorIndex) {
+                    s = randomNumberGenerator(80, 95);
+                    l = randomNumberGenerator(45, 60);
+                } else {
+                    const secondaryType = randomNumberGenerator(1, 3);
+
+                    if (secondaryType === 1) {
+                        // Light secondary
+                        s = randomNumberGenerator(20, 45);
+                        l = randomNumberGenerator(70, 85);
+                    } else if (secondaryType === 2) {
+                        // Dark secondary
+                        s = randomNumberGenerator(20, 50);
+                        l = randomNumberGenerator(25, 45);
+                    } else {
+                        // Muted secondary
+                        s = randomNumberGenerator(30, 55);
+                        l = randomNumberGenerator(45, 65);
+                    }
+                }
+            } else {
+                // Colors with neutrals
+                if (neutralIndexes.includes(i)) {
+                    s = randomNumberGenerator(0, 12);
+                    l = randomNumberGenerator(20, 85);
+                } else {
+                    s = randomNumberGenerator(60, 90);
+                    l = randomNumberGenerator(35, 70);
+                }
+            }
+
+            // Avoid very similar colors with the same Hue
+            isSimilar = false;
+
+            for (const previousColor of usedColors) {
+                if (previousColor.h === h) {
+                    const saturationDifference = Math.abs(previousColor.s - s);
+                    const lightnessDifference = Math.abs(previousColor.l - l);
+
+                    if (saturationDifference < 15 && lightnessDifference < 15) {
+                        isSimilar = true;
+                        break;
+                    }
+                }
+            }
+
+            attempts++;
+        } while (isSimilar && attempts < 20);
+
+        colors.push(hslToHex(h, s, l));
+        usedColors.push({ h, s, l });
+    }
+
+    console.log("Visual style:", style);
+    return colors;
+}
+
+
+
+
+
 
 function generateRandomColor() {
     const red = randomNumberGenerator(0, 255);
@@ -630,32 +843,6 @@ function generateRandomColor() {
 
 function randomNumberGenerator(min, max) {
     return Math.floor(Math.random() * (max - min + 1)) + min;
-}
-
-function rgbToHex(r, g, b) {
-    let hexCode = "#"
-    const hexRed = (r).toString(16).padStart(2, "0");
-    const hexGreen = (g).toString(16).padStart(2, "0");
-    const hexBlue = (b).toString(16).padStart(2, "0");
-
-    hexCode = hexCode.concat(hexRed, hexGreen, hexBlue);
-    return hexCode.toUpperCase();
-}
-
-function rgbStringToHex(rgbString) {
-    if (rgbString.startsWith("#") && rgbString.length === 7) {
-        return rgbString;
-    }
-
-    const values = rgbString.replace("rgb(", "").replace(")", "");
-
-    const channels = values.split(",");
-
-    const r = Number(channels[0].trim());
-    const g = Number(channels[1].trim());
-    const b = Number(channels[2].trim());
-
-    return rgbToHex(r, g, b);
 }
 
 /////////////////////////////////////////
@@ -672,7 +859,7 @@ function renderColorCards() {
 
         if (currentColor != null) {
             colorCard.style.backgroundColor = currentColor;
-            colorCode.textContent = rgbStringToHex(currentColor);
+            colorCode.textContent = currentColor;
         }
     }
 }
@@ -839,4 +1026,142 @@ function updateDeleteIcons() {
             deleteIcon.src = "assets/icons/trash.svg";
         }
     }
+}
+
+
+////////////////////////////////////
+//COLOR CONVERSION
+
+function rgbToHex(r, g, b) {
+    let hexCode = "#"
+    const hexRed = (r).toString(16).padStart(2, "0");
+    const hexGreen = (g).toString(16).padStart(2, "0");
+    const hexBlue = (b).toString(16).padStart(2, "0");
+
+    hexCode = hexCode.concat(hexRed, hexGreen, hexBlue);
+    return hexCode.toUpperCase();
+}
+
+function rgbStringToHex(rgbString) {
+    if (rgbString.startsWith("#") && rgbString.length === 7) {
+        return rgbString;
+    }
+
+    const values = rgbString.replace("rgb(", "").replace(")", "");
+
+    const channels = values.split(",");
+
+    const r = Number(channels[0].trim());
+    const g = Number(channels[1].trim());
+    const b = Number(channels[2].trim());
+
+    return rgbToHex(r, g, b);
+}
+
+function hexToRgb(hex) {
+    const normalizedHex = hex.replace("#", "");
+
+    if (!/^[0-9a-fA-F]{6}$/.test(normalizedHex)) {
+        throw new Error("Invalid HEX color");
+    }
+
+    return {
+        r: parseInt(normalizedHex.slice(0, 2), 16),
+        g: parseInt(normalizedHex.slice(2, 4), 16),
+        b: parseInt(normalizedHex.slice(4, 6), 16)
+    };
+}
+
+function rgbToHsl(r, g, b) {
+    r /= 255;
+    g /= 255;
+    b /= 255;
+
+    const max = Math.max(r, g, b);
+    const min = Math.min(r, g, b);
+    const difference = max - min;
+
+    let h = 0;
+    let s = 0;
+    let l = (max + min) / 2;
+
+    if (difference !== 0) {
+        s = difference / (1 - Math.abs(2 * l - 1));
+
+        switch (max) {
+            case r:
+                h = ((g - b) / difference) % 6;
+                break;
+            case g:
+                h = (b - r) / difference + 2;
+                break;
+            case b:
+                h = (r - g) / difference + 4;
+                break;
+        }
+
+        h *= 60;
+    }
+
+    if (h < 0) {
+        h += 360;
+    }
+
+    return {
+        h: Math.round(h),
+        s: Math.round(s * 100),
+        l: Math.round(l * 100)
+    };
+}
+
+function hexToHsl(hex) {
+    const rgb = hexToRgb(hex);
+
+    return rgbToHsl(rgb.r, rgb.g, rgb.b);
+}
+
+function hslToRgb(h, s, l) {
+    h = ((h % 360) + 360) % 360;
+    s /= 100;
+    l /= 100;
+
+    const chroma = (1 - Math.abs(2 * l - 1)) * s;
+    const x = chroma * (1 - Math.abs((h / 60) % 2 - 1));
+    const m = l - chroma / 2;
+
+    let r = 0;
+    let g = 0;
+    let b = 0;
+
+    if (h < 60) {
+        r = chroma;
+        g = x;
+    } else if (h < 120) {
+        r = x;
+        g = chroma;
+    } else if (h < 180) {
+        g = chroma;
+        b = x;
+    } else if (h < 240) {
+        g = x;
+        b = chroma;
+    } else if (h < 300) {
+        r = x;
+        b = chroma;
+    } else {
+        r = chroma;
+        b = x;
+    }
+
+    return {
+        r: Math.round((r + m) * 255),
+        g: Math.round((g + m) * 255),
+        b: Math.round((b + m) * 255)
+    };
+}
+
+function hslToHex(h, s, l) {
+    const rgb = hslToRgb(h, s, l);
+
+    return rgbToHex(rgb.r, rgb.g, rgb.b);
 }
