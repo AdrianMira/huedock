@@ -16,13 +16,19 @@ const settingsObj = {
         random: generateRandomPalette,
         complementary: generateComplementaryPalette,
         analogous: generateAnalogousPalette,
-        triadic: generateTriadicPalette
+        triadic: generateTriadicPalette,
+        monochromatic: generateMonochromaticPalette,
+        splitComplementary: generateSplitComplementaryPalette,
+        tetradic: generateTetradicPalette
     },
     modeDescriptions: {
         random: "Creates palette with random colors",
         complementary: "Fill palette with complementary colors",
         analogous: "Creates palettes using neighboring colors on the color wheel",
-        triadic: "Creates palettes using three colors equally spaced on the color wheel"
+        triadic: "Creates palettes using three colors equally spaced on the color wheel",
+        monochromatic: "Creates palettes using variations of a single hue",
+        splitComplementary: "Creates palettes using a base hue and two hues near its complement",
+        tetradic: "Creates palettes using two pairs of complementary hues"
     },
     actualMode: "random",
     referenceColor: null,
@@ -300,7 +306,7 @@ savePaletteModal.addEventListener("submit", async (e) => {
             throw new Error(`HTTP ERROR: ${response.status}`)
         }
         const data = await response.json();
-        // SAVED_PALETTES.push(data);
+        savedPalettes.push(data);
 
         console.log("Paleta guardada:", data);
         // console.log(SAVED_PALETTES);
@@ -325,20 +331,22 @@ palette.addEventListener("click", (e) => {
 
     if (deleteBtn) {
         const colorCard = deleteBtn.closest(".color-card");
-        const paletteColorCards = palette.querySelectorAll(".color-card");
+        const paletteColorCards = [...palette.querySelectorAll(".color-card")];
 
         if (paletteColorCards.length > MIN_COLOR_CARDS) {
             if (!colorCard.classList.contains("locked")) {
+                const colorIndex = paletteColorCards.indexOf(colorCard);
+
                 colorCard.remove();
                 updatePalette();
 
-                // update palette preview too
-                let palettePreviewColors = (savePaletteModal.querySelectorAll(".palette-preview__color"));
-                palettePreviewColors[0].remove(); // remove 1 color. Preview updates when use save palette BTN
+                // Update palette preview
+                const palettePreviewColors = savePaletteModal.querySelectorAll(".palette-preview__color");
+                palettePreviewColors[colorIndex].remove();
 
-                // update number colors text
-                paletteNColors.textContent = palettePreviewColors.length - 1;
-                savePaletteModalNColors.textContent = palettePreviewColors.length - 1;
+                // Update number of colors
+                paletteNColors.textContent = paletteColorCards.length - 1;
+                savePaletteModalNColors.textContent = paletteColorCards.length - 1;
 
                 addColorBtn.classList.remove("hidden");
                 updateDeleteIcons();
@@ -625,7 +633,6 @@ function generatePalette() {
     renderColorCards();
 }
 
-
 function generateRandomPalette() {
     const paletteColorCards = palette.querySelectorAll(".color-card");
 
@@ -636,20 +643,21 @@ function generateRandomPalette() {
         if (colorCard.classList.contains("locked")) {
             continue;
         }
-        paletteObj.colors[i] = generateRandomColor();
+        paletteObj.colors[i] = rgbStringToHex(generateRandomColor());
     }
 }
 
-function generateComplementaryPalette(totalColors) {
-    let h;
-
+function getReferenceHue() {
     if (settingsObj.useReferenceColor) {
         const referenceColor = hexToHsl(settingsObj.referenceColor);
-        h = referenceColor.h;
-    } else {
-        h = randomNumberGenerator(0, 359);
+        return referenceColor.h;
     }
 
+    return randomNumberGenerator(0, 359);
+}
+
+function generateComplementaryPalette(totalColors) {
+    const h = getReferenceHue();
     const hComp = (h + 180) % 360;
     const mainColorsCount = Math.ceil(totalColors / 2);
     const hues = [];
@@ -666,15 +674,7 @@ function generateComplementaryPalette(totalColors) {
 }
 
 function generateAnalogousPalette(totalColors) {
-    let h;
-
-    if (settingsObj.useReferenceColor) {
-        const referenceColor = hexToHsl(settingsObj.referenceColor);
-        h = referenceColor.h;
-    } else {
-        h = randomNumberGenerator(0, 359);
-    }
-
+    const h = getReferenceHue();
     const direction = randomNumberGenerator(0, 1);
     const hues = [];
 
@@ -693,15 +693,7 @@ function generateAnalogousPalette(totalColors) {
 }
 
 function generateTriadicPalette(totalColors) {
-    let h;
-
-    if (settingsObj.useReferenceColor) {
-        const referenceColor = hexToHsl(settingsObj.referenceColor);
-        h = referenceColor.h;
-    } else {
-        h = randomNumberGenerator(0, 359);
-    }
-
+    const h = getReferenceHue();
     const hues = [];
     const triadicHues = [h, (h + 120) % 360, (h + 240) % 360];
 
@@ -713,21 +705,50 @@ function generateTriadicPalette(totalColors) {
     return hues;
 }
 
+function generateMonochromaticPalette(totalColors) {
+    const h = getReferenceHue();
+    const hues = [];
 
+    for (let i = 0; i < totalColors; i++) {
+        hues.push(h);
+    }
 
+    return hues;
+}
 
+function generateSplitComplementaryPalette(totalColors) {
+    const h = getReferenceHue();
+    const hues = [];
+    const splitHues = [h, (h + 150) % 360, (h + 210) % 360];
 
+    for (let i = 0; i < totalColors; i++) {
+        const hueIndex = i % 3;
+        hues.push(splitHues[hueIndex]);
+    }
+
+    return hues;
+}
+
+function generateTetradicPalette(totalColors) {
+    const h = getReferenceHue();
+    const hues = [];
+    const tetradicHues = [h, (h + 60) % 360, (h + 180) % 360, (h + 240) % 360];
+
+    for (let i = 0; i < totalColors; i++) {
+        const hueIndex = i % 4;
+        hues.push(tetradicHues[hueIndex]);
+    }
+
+    return hues;
+}
 
 function applyRandomStyle(hues) {
     const colors = [];
-    const usedColors = [];
     const style = randomNumberGenerator(1, 5);
     const mainColorIndex = randomNumberGenerator(0, hues.length - 1);
-    const lightAccentIndex = randomNumberGenerator(0, hues.length - 1);
-
-    // Random positions for neutral colors
     const neutralIndexes = [];
 
+    // Choose neutral color positions
     if (style === 5 && hues.length >= 3) {
         let neutralCount = 1;
 
@@ -744,94 +765,100 @@ function applyRandomStyle(hues) {
         }
     }
 
+    // Set lightness range depending on style
+    let minLightness = 30;
+    let maxLightness = 80;
+
+    if (style === 1) {
+        // Pastel
+        minLightness = 56;
+        maxLightness = 92;
+    } else if (style === 2) {
+        // Vibrant
+        minLightness = 30;
+        maxLightness = 75;
+    } else if (style === 3) {
+        // Dark with light accent
+        minLightness = 25;
+        maxLightness = 45;
+    } else if (style === 4) {
+        // Main and secondary
+        minLightness = 30;
+        maxLightness = 82;
+    }
+
+    // Generate different lightness levels
+    const lightnessLevels = [];
+    let levelsCount = hues.length;
+
+    if (style === 3) {
+        levelsCount--;
+    }
+
+    for (let i = 0; i < levelsCount; i++) {
+        let l;
+
+        if (levelsCount === 1) {
+            l = Math.round((minLightness + maxLightness) / 2);
+        } else {
+            const step = (maxLightness - minLightness) / (levelsCount - 1);
+            l = Math.round(minLightness + step * i);
+        }
+
+        lightnessLevels.push(l);
+    }
+
+    // Add one light color to the dark style
+    if (style === 3) {
+        lightnessLevels.push(75);
+    }
+
+    // Shuffle lightness levels
+    for (let i = lightnessLevels.length - 1; i > 0; i--) {
+        const randomIndex = randomNumberGenerator(0, i);
+        const temporaryValue = lightnessLevels[i];
+
+        lightnessLevels[i] = lightnessLevels[randomIndex];
+        lightnessLevels[randomIndex] = temporaryValue;
+    }
+
+    // Apply visual style
     for (let i = 0; i < hues.length; i++) {
         const h = hues[i];
+        const l = lightnessLevels[i];
         let s;
-        let l;
-        let attempts = 0;
-        let isSimilar;
 
-        do {
-            if (style === 1) {
-                // Pastel
-                s = randomNumberGenerator(45, 75);
-                l = randomNumberGenerator(65, 85);
-            } else if (style === 2) {
-                // Vibrant
-                s = randomNumberGenerator(70, 95);
-                l = randomNumberGenerator(35, 70);
-            } else if (style === 3) {
-                // Dark with a light accent
-                if (i === lightAccentIndex) {
-                    s = randomNumberGenerator(40, 75);
-                    l = randomNumberGenerator(65, 80);
-                } else {
-                    s = randomNumberGenerator(35, 80);
-                    l = randomNumberGenerator(25, 45);
-                }
-            } else if (style === 4) {
-                // Main color and secondary colors
-                if (i === mainColorIndex) {
-                    s = randomNumberGenerator(80, 95);
-                    l = randomNumberGenerator(45, 60);
-                } else {
-                    const secondaryType = randomNumberGenerator(1, 3);
-
-                    if (secondaryType === 1) {
-                        // Light secondary
-                        s = randomNumberGenerator(20, 45);
-                        l = randomNumberGenerator(70, 85);
-                    } else if (secondaryType === 2) {
-                        // Dark secondary
-                        s = randomNumberGenerator(20, 50);
-                        l = randomNumberGenerator(25, 45);
-                    } else {
-                        // Muted secondary
-                        s = randomNumberGenerator(30, 55);
-                        l = randomNumberGenerator(45, 65);
-                    }
-                }
+        if (style === 1) {
+            // Pastel
+            s = randomNumberGenerator(40, 70);
+        } else if (style === 2) {
+            // Vibrant
+            s = randomNumberGenerator(70, 95);
+        } else if (style === 3) {
+            // Dark with light accent
+            s = randomNumberGenerator(35, 80);
+        } else if (style === 4) {
+            // Main and secondary
+            if (i === mainColorIndex) {
+                s = randomNumberGenerator(80, 95);
             } else {
-                // Colors with neutrals
-                if (neutralIndexes.includes(i)) {
-                    s = randomNumberGenerator(0, 12);
-                    l = randomNumberGenerator(20, 85);
-                } else {
-                    s = randomNumberGenerator(60, 90);
-                    l = randomNumberGenerator(35, 70);
-                }
+                s = randomNumberGenerator(15, 50);
             }
-
-            // Avoid very similar colors with the same Hue
-            isSimilar = false;
-
-            for (const previousColor of usedColors) {
-                if (previousColor.h === h) {
-                    const saturationDifference = Math.abs(previousColor.s - s);
-                    const lightnessDifference = Math.abs(previousColor.l - l);
-
-                    if (saturationDifference < 15 && lightnessDifference < 15) {
-                        isSimilar = true;
-                        break;
-                    }
-                }
+        } else {
+            // Colors with neutrals
+            if (neutralIndexes.includes(i)) {
+                s = randomNumberGenerator(0, 12);
+            } else {
+                s = randomNumberGenerator(60, 90);
             }
-
-            attempts++;
-        } while (isSimilar && attempts < 20);
+        }
 
         colors.push(hslToHex(h, s, l));
-        usedColors.push({ h, s, l });
     }
 
     console.log("Visual style:", style);
     return colors;
 }
-
-
-
-
-
 
 function generateRandomColor() {
     const red = randomNumberGenerator(0, 255);
