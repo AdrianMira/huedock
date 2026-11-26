@@ -152,20 +152,24 @@ savedPalettesModeLink.addEventListener("click", async (e) => {
         method: "GET",
         headers
     }
+
     try {
+        savedPalettesList.textContent = "Loading palettes...";
+
         const response = await fetch(url, obj);
         if (!response.ok) {
-            throw new Error(`HTTP ERROR: ${response.status}`)
+            throw new Error(`HTTP ERROR: ${response.status}`);
         }
-        const data = await response.json();
-        console.log(data);
 
+        const data = await response.json();
         savedPalettes = [...data];
-        console.log(savedPalettes);
+
         renderSavedPalettes();
 
     } catch (error) {
-        console.error("Error finding palettes:", error);
+        console.error("Error loading palettes:", error);
+        savedPalettesList.textContent = "Error loading palettes.";
+        alert("Error loading palettes. Please try again.");
     }
 })
 
@@ -215,15 +219,30 @@ settingsColorInput.addEventListener("input", () => {
 
 settingsColorCodeInput.addEventListener("input", () => {
     const color = settingsColorCodeInput.value.trim();
-    settingsColorInput.value = color;
+
+    settingsColorCodeInput.setCustomValidity("");
+
+    if (isValidHex(color)) {
+        settingsColorInput.value = color;
+    }
 });
 
 settingsForm.addEventListener("submit", (e) => {
     e.preventDefault();
 
+    const useReferenceColor = settingsGenerationMode.value !== "random" && settingsColorCheckBox.checked;
+
+    if (useReferenceColor && !isValidHex(settingsColorCodeInput.value.trim())) {
+        settingsColorCodeInput.setCustomValidity("Enter a valid HEX color, for example #FF5733.");
+        settingsColorCodeInput.reportValidity();
+        return;
+    }
+
+    settingsColorCodeInput.setCustomValidity("");
+
     settingsObj.actualMode = settingsGenerationMode.value;
-    settingsObj.useReferenceColor = settingsColorCheckBox.checked;
-    settingsObj.referenceColor = settingsColorInput.value;
+    settingsObj.useReferenceColor = useReferenceColor;
+    settingsObj.referenceColor = settingsColorInput.value.toUpperCase();
 
     settingsModal.close();
 });
@@ -234,8 +253,13 @@ settingsCloseBtn.addEventListener("click", () => {
 
 
 // edit color modal
+
 editColorCodeInput.addEventListener("input", () => {
-    editActualColorInput.style.backgroundColor = editColorCodeInput.value;
+    editColorCodeInput.setCustomValidity("");
+
+    if (isValidHex(editColorCodeInput.value.trim())) {
+        editActualColorInput.style.backgroundColor = editColorCodeInput.value.trim();
+    }
 });
 
 editColorModal.addEventListener("submit", (e) => {
@@ -243,16 +267,27 @@ editColorModal.addEventListener("submit", (e) => {
 
     if (!editingColorCard) return;
 
+    const newColor = editColorCodeInput.value.trim();
+
+    if (!isValidHex(newColor)) {
+        editColorCodeInput.setCustomValidity("Enter a valid HEX color, for example #FF5733.");
+        editColorCodeInput.reportValidity();
+        return;
+    }
+
+    editColorCodeInput.setCustomValidity("");
+
     const colorCards = [...colorCardList.querySelectorAll(".color-card")];
     const index = colorCards.indexOf(editingColorCard);
 
     if (index === -1) return;
 
-    paletteObj.colors[index] = editColorCodeInput.value;
+    paletteObj.colors[index] = newColor.toUpperCase();
 
     renderColorCards();
     editColorModal.close();
 });
+
 
 editColorCloseBtn.addEventListener("click", () => {
     editColorModal.close();
@@ -275,41 +310,53 @@ savePaletteCloseBtn.addEventListener("click", () => {
     savePaletteModal.close();
 })
 
-// ID count for access to palette. With database this will change.
-// let idPalette = 0;
-console.log(paletteObj.colors);
-console.log(savedPalettes);
+savePaletteNameInput.addEventListener("input", () => {
+    savePaletteNameInput.setCustomValidity("");
+});
 
 savePaletteModal.addEventListener("submit", async (e) => {
     e.preventDefault();
-    // save palette preview data => paletteObj to Database
-    paletteObj.paletteName = savePaletteNameInput.value;
+
+    const paletteName = savePaletteNameInput.value.trim();
+    if (!isValidPaletteName(paletteName)) {
+        savePaletteNameInput.setCustomValidity("Palette name must contain between 1 and 50 characters.");
+        savePaletteNameInput.reportValidity();
+        return;
+    }
+    savePaletteNameInput.setCustomValidity("");
+
+    const saveConfirmBtn = savePaletteModal.querySelector('button[type="submit"]');
+    if (saveConfirmBtn.disabled)
+        return;
+
+    const originalContent = saveConfirmBtn.innerHTML;
 
     const newPalette = {
-        paletteName: paletteObj.paletteName,
-        colors: [...paletteObj.colors]
+        paletteName,
+        colors: paletteObj.colors.map(color => rgbStringToHex(color))
     };
 
-    // fetch -> Send request
-
     const url = "/api/palettes";
-    const headers = new Headers({ "Content-Type": "application/json" });
     const obj = {
         method: "POST",
-        headers,
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(newPalette)
-    }
+    };
 
     try {
+        saveConfirmBtn.disabled = true;
+        saveConfirmBtn.textContent = "Saving...";
+
         const response = await fetch(url, obj);
+
         if (!response.ok) {
-            throw new Error(`HTTP ERROR: ${response.status}`)
+            throw new Error(`HTTP ERROR: ${response.status}`);
         }
+
         const data = await response.json();
         savedPalettes.push(data);
 
-        console.log("Paleta guardada:", data);
-        // console.log(SAVED_PALETTES);
+        paletteObj.paletteName = paletteName;
 
         savePaletteModal.close();
         savePaletteNameInput.value = "";
@@ -317,11 +364,15 @@ savePaletteModal.addEventListener("submit", async (e) => {
         renderSavedPalettes();
 
     } catch (error) {
-        console.error("Error al guardar la paleta:", error);
-        return;
+        console.error("Error saving palette:", error);
+        alert("Error saving palette. Please try again.");
+
+    } finally {
+        saveConfirmBtn.disabled = false;
+        saveConfirmBtn.innerHTML = originalContent;
     }
 
-})
+});
 
 // palette
 palette.addEventListener("click", (e) => {
@@ -384,7 +435,6 @@ palette.addEventListener("click", (e) => {
             [...colorCardList.children].indexOf(editingColorCard)
         ];
 
-        console.log(currentColor)
         editColorCodeInput.value = currentColor;
 
         const actualColor = editColorModal.querySelector(".actual-color");
@@ -482,7 +532,6 @@ savedPalettesList.addEventListener("click", (e) => {
         namePaleteModal.textContent = paletteName.textContent;
 
         deletePaleteModal.dataset.idDelete = paletteCardLoaded.dataset.id;
-        console.log(deletePaleteModal.dataset.idDelete);
     }
 })
 
@@ -491,40 +540,42 @@ deletePaleteModalCancelBtn.addEventListener("click", () => {
 })
 
 deletePaleteModalConfirmBtn.addEventListener("click", async () => {
-    // Fetch --> DELETE palette
     const paletteDeletedIndex = savedPalettes.findIndex((palette) => {
         return palette.id === Number(deletePaleteModal.dataset.idDelete);
     });
 
-    console.log("id", savedPalettes[paletteDeletedIndex]);
+    if (paletteDeletedIndex === -1 || deletePaleteModalConfirmBtn.disabled) return;
+
+    const originalContent = deletePaleteModalConfirmBtn.innerHTML;
 
     const url = `/api/palettes/${savedPalettes[paletteDeletedIndex].id}`;
-    const headers = new Headers({ "Content-Type": "application/json" });
-    const obj = {
-        method: "DELETE",
-        headers
-    }
+    const obj = { method: "DELETE" };
 
     try {
+        deletePaleteModalConfirmBtn.disabled = true;
+        deletePaleteModalConfirmBtn.textContent = "Deleting...";
+
         const response = await fetch(url, obj);
+
         if (!response.ok) {
             throw new Error(`HTTP ERROR: ${response.status}`);
         }
-        const data = await response.json();
-        console.log(data);
 
-        // Borrar estado
-        if (paletteDeletedIndex !== -1) {
-            savedPalettes.splice(paletteDeletedIndex, 1);
-            renderSavedPalettes();
-        }
+        savedPalettes.splice(paletteDeletedIndex, 1);
+        renderSavedPalettes();
+
+        deletePaleteModal.close();
+
     } catch (error) {
         console.error("Error deleting palette:", error);
+        alert("Error deleting palette. Please try again.");
+
     } finally {
-        deletePaleteModal.close();
+        deletePaleteModalConfirmBtn.disabled = false;
+        deletePaleteModalConfirmBtn.innerHTML = originalContent;
     }
 
-})
+});
 
 /////////////////////////////////////////
 
@@ -855,8 +906,6 @@ function applyRandomStyle(hues) {
 
         colors.push(hslToHex(h, s, l));
     }
-
-    console.log("Visual style:", style);
     return colors;
 }
 
@@ -902,8 +951,6 @@ function updatePalette() {
 
         paletteObj.colors.push(rgbStringToHex(color));
     }
-
-    // console.log("Palette updated:", paletteObj);
 }
 
 /////////////////////////////////////////
@@ -1014,7 +1061,6 @@ function renderSavedPalettes() {
         // Insert into DOM
         savedPalettesList.append(savedPalette);
     }
-    numberPalettes.textContent = savedPalettes.length;
 }
 
 /////////////////////////////////////////
@@ -1191,4 +1237,15 @@ function hslToHex(h, s, l) {
     const rgb = hslToRgb(h, s, l);
 
     return rgbToHex(rgb.r, rgb.g, rgb.b);
+}
+
+//////////////////////
+// VALIDATION
+
+function isValidHex(hex) {
+    return /^#[0-9a-fA-F]{6}$/.test(hex);
+}
+
+function isValidPaletteName(name) {
+    return name.trim().length > 0 && name.trim().length <= 50;
 }

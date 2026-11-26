@@ -712,7 +712,7 @@ body {
 
     background-color: var(--color-background);
 
-    text-align: center;
+    /* text-align: center; */
     padding-block: var(--space-sm);
     gap: var(--space-lg);
 
@@ -918,7 +918,7 @@ body {
         padding: var(--space-xs) var(--space-sm);
     }
 
-    .generation-buttons{
+    .generation-buttons {
         padding-block: var(--space-sm);
     }
 }
